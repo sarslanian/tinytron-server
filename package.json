@@ -1,0 +1,21 @@
+{
+  "name": "tinytron-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "author": "samars",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "luxon": "^3.5.0",
+    "mqtt": "^5.10.3",
+    "node-fetch": "^3.3.2",
+    "xml2js": "^0.6.2"
+  }
+}
