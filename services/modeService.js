@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import { generateCTA } from '../gennies/cta.js';
 import {dashboard} from '../applications/dashboard.js';
+import { nfl } from '../applications/nfl.js';
 
 export class ModeService {
     constructor(mqttService) {
@@ -12,12 +13,9 @@ export class ModeService {
 
         // Define modes with their respective frequencies and data generation logic
         this.modes = {
-            mode1: new Mode("mode1", 50000, async () => {
+            mode1: new Mode("mode1", 2000, async () => {
                 try {
-                    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=41.89536&longitude=13.41&current=temperature_2m,apparent_temperature&temperature_unit=fahrenheit&wind_speed_unit=mph`);
-                    const data = await response.json();
-
-                    return { type: "text", text: `Temp: ${data.current.temperature_2m}°F`, x: 10, y: 10, color: "0x00FF00" };
+                  return nfl(); // Return the generated NFL data
                 } catch (error) {
                     console.error('Error fetching weather data:', error);
                     return { type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" };
@@ -44,7 +42,7 @@ export class ModeService {
         this.publishInterval = null;  // Interval for sending messages
 
         // Set the default mode on load
-        this.switchMode('mode2');
+        this.switchMode('mode1');
     }
 
     // Switch modes and send an immediate message

@@ -9,7 +9,7 @@ export class MqttService {
     connect() {
         return new Promise((resolve, reject) => {
             this.client.on("connect", () => {
-                console.log("Connected to MQTT broker");
+                console.log("Connected to MQTT broker", this.client);
                 resolve();
             });
 
@@ -38,7 +38,9 @@ export class MqttService {
     }
 
     publish(topic, message) {
+        console.log(`Publishing to topic ${topic}: ${message}`);
         this.client.publish(topic, message, { qos: 1 }, (err) => {
+            console.log("Publish callback");
             if (err) {
                 console.log("Error publishing message: ", err);
             } else {

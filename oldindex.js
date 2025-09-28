@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const mqtt = require("mqtt");
-const client = mqtt.connect("mqtt://192.168.86.31:1883", {
+const client = mqtt.connect("mqtt://127.0.0.1:1883", {
     keepalive: 60  // keeps the connection alive
 });
 

@@ -3,7 +3,7 @@ import { ModeService } from './services/modeService.js';  // Correct import path
 import { MqttService } from './services/mqttService.js';  // Make sure this is imported correctly
 
 const app = express();
-const mqttService = new MqttService();  // Create the MQTT service instance
+const mqttService = new MqttService("mqtt://mosquitto:1883");  // Create the MQTT service instance
 
 // Create the ModeService instance
 const modeService = new ModeService(mqttService);  
