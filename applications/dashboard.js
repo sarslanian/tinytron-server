@@ -10,7 +10,7 @@ const dashboard = async () => {
     let payload = []
 
     const ctaData = await fetchCTAData("40710", "5", "brn");
-    const weatherData = await fetchWeatherData("latitude=41.89536&longitude=13.41&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=1");
+    const weatherData = await fetchWeatherData("latitude=41.89536&longitude=-87.6433387&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago&forecast_days=1");
     
     const cta = await generateCTA(ctaData, 1, 23, "0x8B4513");
     const date  = await generateDate(1, 4, "0x8a8a8a");

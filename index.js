@@ -16,7 +16,7 @@ app.get('/switch_mode/:mode', (req, res) => {
 });
 
 // Start the Express server
-app.listen(3000, () => {
+app.listen(3000, "0.0.0.0", () => {
     console.log('Server listening on port 3000');
 });
 
