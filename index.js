@@ -2,6 +2,17 @@ import express from 'express';
 import { ModeService } from './services/modeService.js';  // Correct import path
 import { MqttService } from './services/mqttService.js';  // Make sure this is imported correctly
 
+// Global error handlers to prevent crashes
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    // Don't exit, just log the error
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Don't exit, just log the error
+});
+
 const app = express();
 const mqttService = new MqttService("mqtt://mosquitto:1883");  // Create the MQTT service instance
 

@@ -17,6 +17,7 @@ services:
       CTA_API_KEY: c17913e4087c41bb9a5358afd47398f0
     ports:
       - 3000:3000
+    restart: unless-stopped
 
   mosquitto:
     image: eclipse-mosquitto

@@ -8,6 +8,12 @@ export class Mode {
 
     // Return data from the callback, ensuring it handles async logic
     async getData() {
-        return await this.dataCallback();
+        try {
+            return await this.dataCallback();
+        } catch (error) {
+            console.error(`Error in mode ${this.name} getData():`, error);
+            // Return a safe fallback payload
+            return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+        }
     }
 }

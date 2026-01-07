@@ -70,9 +70,16 @@ export class ModeService {
 
     // Publish a message based on the current mode's data
     async publishMessage() {
-        const data = await this.currentMode.getData();
-        console.log(`Publishing data: ${JSON.stringify(data)}`);
-        this.mqttService.publish("tinytron", JSON.stringify({ data: data }));
+        try {
+            const data = await this.currentMode.getData();
+            console.log(`Publishing data: ${JSON.stringify(data)}`);
+            this.mqttService.publish("tinytron", JSON.stringify({ data: data }));
+        } catch (error) {
+            console.error('Error in publishMessage:', error);
+            // Publish error message instead of crashing
+            const errorPayload = [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+            this.mqttService.publish("tinytron", JSON.stringify({ data: errorPayload }));
+        }
     }
 
     // Get the current mode
