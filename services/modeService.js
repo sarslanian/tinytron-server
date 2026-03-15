@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { generateCTA } from '../gennies/cta.js';
 import {dashboard} from '../applications/dashboard.js';
 import { nfl } from '../applications/nfl.js';
+import { stocks } from '../applications/stocks.js';
 
 export class ModeService {
     constructor(mqttService) {
@@ -35,6 +36,15 @@ export class ModeService {
                 const now = new Date();
                 const timeString = now.toTimeString().split(' ')[0]; // HH:MM:SS format
                 return { type: "text", text: timeString, x: 10, y: 10, color: "0xFFCC00" };
+            }),
+
+            mode4: new Mode("mode4", 5000, async () => {
+                try {
+                    return stocks(['AAPL']); // Start with Apple stock
+                } catch (error) {
+                    console.error('Error fetching stock data:', error);
+                    return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+                }
             })
         };
 
@@ -61,7 +71,10 @@ export class ModeService {
 
             // Start the new interval for sending messages at the frequency of the new mode
             this.publishInterval = setInterval(() => {
-                this.publishMessage();
+                // Wrap in promise handler to catch any unhandled rejections
+                this.publishMessage().catch(error => {
+                    console.error('Error in publishMessage interval:', error);
+                });
             }, this.currentMode.frequency);
         } else {
             console.log(`Invalid mode: ${modeName}`);

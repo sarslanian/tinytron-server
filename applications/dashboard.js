@@ -63,11 +63,19 @@ const dashboard = async () => {
     } catch (error) {
         console.error('Error in dashboard:', error);
         // Return minimal payload with error message
-        payload = [
-            { type: "text", text: "Error loading data", x: 1, y: 4, color: "0xFF0000" },
-            await generateDate(1, 10, "0x8a8a8a"),
-            ...await generateTime(46, 10, "0x8a8a8a")
-        ];
+        try {
+            payload = [
+                { type: "text", text: "Error loading data", x: 1, y: 4, color: "0xFF0000" },
+                await generateDate(1, 10, "0x8a8a8a"),
+                ...await generateTime(46, 10, "0x8a8a8a")
+            ];
+        } catch (fallbackError) {
+            console.error('Error in dashboard fallback:', fallbackError);
+            // Ultimate fallback - just return error message
+            payload = [
+                { type: "text", text: "Error loading data", x: 1, y: 4, color: "0xFF0000" }
+            ];
+        }
     }
 
     return payload
