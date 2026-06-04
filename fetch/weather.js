@@ -16,6 +16,13 @@ const fetchWeatherData = async (params, retries = 3) => {
                 
                 clearTimeout(timeoutId);
                 
+                if (response.status === 429) {
+                    console.error(`Attempt ${attempt}/${retries}: Rate limited (429) - waiting 30s before retry`);
+                    clearTimeout(timeoutId);
+                    if (attempt === retries) { console.error('All retry attempts failed for weather data'); return null; }
+                    await new Promise(resolve => setTimeout(resolve, 30000));
+                    continue;
+                }
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
