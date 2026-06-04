@@ -8,12 +8,27 @@
 # database or a cache. For examples, see the Awesome Compose repository:
 # https://github.com/docker/awesome-compose
 services:
+  web:
+    build:
+      context: ../tinytron-web
+      args:
+        NEXT_PUBLIC_CONTROL_PIN: ${CONTROL_PIN}
+    environment:
+      EXPRESS_URL: http://server:3000
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    depends_on:
+      - server
+
   server:
     build:
       context: .
     environment:
       NODE_ENV: production
-      CTA_API_KEY: c17913e4087c41bb9a5358afd47398f0
+      CTA_API_KEY: ${CTA_API_KEY}
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
     ports:
       - 3000:3000
     restart: unless-stopped
@@ -28,10 +43,18 @@ services:
     ports:
       - "1883:1883"
       - "9001:9001"
+    environment:
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/passwd:/mosquitto/config/passwd
+    entrypoint: >
+      sh -c "chown root:root /mosquitto/config/passwd &&
+             chmod 0700 /mosquitto/config/passwd &&
+             exec /docker-entrypoint.sh mosquitto -c /mosquitto/config/mosquitto.conf"
     healthcheck:
-      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3"]
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3 -u $${MQTT_USERNAME} -P $${MQTT_PASSWORD}"]
       interval: 5s
       timeout: 5s
       retries: 5

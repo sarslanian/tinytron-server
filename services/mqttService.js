@@ -3,7 +3,11 @@ import mqtt from 'mqtt';
 
 export class MqttService {
     constructor(brokerUrl) {
-        this.client = mqtt.connect(brokerUrl, { keepalive: 60 });
+        this.client = mqtt.connect(brokerUrl, {
+            keepalive: 60,
+            username: process.env.MQTT_USERNAME,
+            password: process.env.MQTT_PASSWORD,
+        });
         this.isConnected = false;
         this.publishQueue = [];
 

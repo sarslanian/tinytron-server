@@ -19,6 +19,12 @@ const mqttService = new MqttService("mqtt://mosquitto:1883");  // Create the MQT
 // Create the ModeService instance
 const modeService = new ModeService(mqttService);  
 
+// Route to get current mode
+app.get('/current_mode', (req, res) => {
+    const current = modeService.getCurrentMode();
+    res.json({ mode: current ? current.name : null });
+});
+
 // Route to switch modes
 app.get('/switch_mode/:mode', (req, res) => {
     const modeName = req.params.mode;
