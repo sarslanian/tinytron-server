@@ -1,5 +1,5 @@
 import express from 'express';
-import { ModeService } from './services/modeService.js';  // Correct import path
+import { ModeService, MODES } from './services/modeService.js';  // Correct import path
 import { MqttService } from './services/mqttService.js';  // Make sure this is imported correctly
 
 // Global error handlers to prevent crashes
@@ -19,11 +19,15 @@ const mqttService = new MqttService("mqtt://mosquitto:1883");  // Create the MQT
 // Create the ModeService instance
 const modeService = new ModeService(mqttService);  
 
-// Example route to switch modes (this could be done via any event, such as an HTTP request)
+// Route to switch modes
 app.get('/switch_mode/:mode', (req, res) => {
     const modeName = req.params.mode;
-    modeService.switchMode(modeName);  // Switch the mode using the method
-    res.send(`Switched to mode: ${modeName}`);
+    const validModes = Object.values(MODES);
+    if (!validModes.includes(modeName)) {
+        return res.status(400).json({ error: `Unknown mode: ${modeName}` });
+    }
+    modeService.switchMode(modeName);
+    res.json({ mode: modeName });
 });
 
 // Start the Express server

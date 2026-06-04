@@ -1,12 +1,20 @@
 // services/modeService.js
 import fetch from 'node-fetch';  // Assuming you're using ESM
 import { Mode } from '../mode.js'; // Adjust the path if needed
-import dotenv from 'dotenv';
 
 import { generateCTA } from '../gennies/cta.js';
-import {dashboard} from '../applications/dashboard.js';
+import { dashboard } from '../applications/dashboard.js';
 import { nfl } from '../applications/nfl.js';
 import { stocks } from '../applications/stocks.js';
+
+const MODES = {
+    NFL: 'mode1',
+    DASHBOARD: 'mode2',
+    CLOCK: 'mode3',
+    STOCKS: 'mode4',
+};
+
+export { MODES };
 
 export class ModeService {
     constructor(mqttService) {
@@ -14,31 +22,31 @@ export class ModeService {
 
         // Define modes with their respective frequencies and data generation logic
         this.modes = {
-            mode1: new Mode("mode1", 2000, async () => {
+            [MODES.NFL]: new Mode(MODES.NFL, 2000, async () => {
                 try {
                   return nfl(); // Return the generated NFL data
                 } catch (error) {
-                    console.error('Error fetching weather data:', error);
+                    console.error('Error fetching NFL data:', error);
                     return { type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" };
                 }
             }),
 
-            mode2: new Mode("mode2", 5000, async () => {
+            [MODES.DASHBOARD]: new Mode(MODES.DASHBOARD, 5000, async () => {
                 try {
-                    return dashboard(); // Return the generated CTA data
+                    return dashboard(); // Return the generated dashboard data
                 } catch (error) {
-                    console.error('Error fetching CTA data:', error);
+                    console.error('Error fetching dashboard data:', error);
                     return { type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" };
                 }
             }),
 
-            mode3: new Mode("mode3", 5000, () => {
+            [MODES.CLOCK]: new Mode(MODES.CLOCK, 5000, () => {
                 const now = new Date();
                 const timeString = now.toTimeString().split(' ')[0]; // HH:MM:SS format
                 return { type: "text", text: timeString, x: 10, y: 10, color: "0xFFCC00" };
             }),
 
-            mode4: new Mode("mode4", 5000, async () => {
+            [MODES.STOCKS]: new Mode(MODES.STOCKS, 5000, async () => {
                 try {
                     return stocks(['AAPL']); // Start with Apple stock
                 } catch (error) {
@@ -52,7 +60,7 @@ export class ModeService {
         this.publishInterval = null;  // Interval for sending messages
 
         // Set the default mode on load
-        this.switchMode('mode1');
+        this.switchMode(MODES.NFL);
     }
 
     // Switch modes and send an immediate message
