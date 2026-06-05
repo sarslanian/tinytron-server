@@ -172,7 +172,10 @@ export const fetchMLBGames = async () => {
 
     try {
         console.log(`[MLB] Fetching schedule for PT date: ${dateStr}`);
-        const res = await fetch(url);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeout);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const games = (data.dates?.[0]?.games || []).map(parseGame);
@@ -181,7 +184,7 @@ export const fetchMLBGames = async () => {
         _cacheTime = now;
         return games;
     } catch (err) {
-        console.error('[MLB] Fetch error:', err);
+        console.error('[MLB] Fetch error:', err.name === 'AbortError' ? 'Request timed out' : err);
         return _cache || [];
     }
 };
