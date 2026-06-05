@@ -44,19 +44,8 @@ const BASE_COLOR_HOME = '0xffffff'; // home plate always white
 const createDiamond = (bases) => {
     const elements = [];
 
-    // Draw diamond lines (dim grey connectors)
-    // 2B → 1B
-    for (let i = 0; i <= 7; i++) {
-        elements.push({ type: 'shape', shape: 'rect', fill: '0x222222',
-            start_x: BASE_COORDS.second.x + i, start_y: BASE_COORDS.second.y + i, width: 1, height: 1 });
-    }
-    // 2B → 3B
-    for (let i = 0; i <= 7; i++) {
-        elements.push({ type: 'shape', shape: 'rect', fill: '0x222222',
-            start_x: BASE_COORDS.second.x - i, start_y: BASE_COORDS.second.y + i, width: 1, height: 1 });
-    }
-
-    // Base dots (2×2 squares)
+    // Draw base dots only (no diagonal connector lines — each Rect allocates
+    // a full Bitmap+Palette+TileGrid in CircuitPython, so we keep object count low)
     const drawBase = (coord, color) => {
         elements.push({ type: 'shape', shape: 'rect', fill: color,
             start_x: coord.x, start_y: coord.y, width: 2, height: 2 });
