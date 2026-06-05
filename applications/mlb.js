@@ -1,11 +1,6 @@
 import { fetchMLBGames } from '../fetch/mlb.js';
 import { createGameDisplay, createNoGamesDisplay } from '../gennies/baseball.js';
-import { readFile } from 'fs/promises';
-import { fileURLToPath } from 'url';
-import path from 'path';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const TEAMS_CONFIG = path.join(__dirname, '../config/mlb-teams.json');
+import { getTeamFilter } from '../services/mlbConfig.js';
 
 const GAME_DISPLAY_TIME = 8_000; // 8 seconds per game
 
@@ -13,17 +8,6 @@ const GAME_DISPLAY_TIME = 8_000; // 8 seconds per game
 let games = [];
 let rotationStartTime = 0;
 let currentGameIndex = 0;
-
-// Load team filter from config file (returns array of team IDs, empty = show all)
-const loadTeamFilter = async () => {
-    try {
-        const raw = await readFile(TEAMS_CONFIG, 'utf8');
-        const cfg = JSON.parse(raw);
-        return Array.isArray(cfg.teams) ? cfg.teams : [];
-    } catch {
-        return [];
-    }
-};
 
 // Sort games: live first, then pre-game (by start time), then finals/delayed/suspended
 const sortGames = (gameList) => {
@@ -36,7 +20,7 @@ export const mlb = async () => {
 
     // Fetch + filter games (fetchMLBGames handles its own 30s cache)
     const allGames = await fetchMLBGames();
-    const teamFilter = await loadTeamFilter();
+    const teamFilter = getTeamFilter();
 
     const filtered = teamFilter.length > 0
         ? allGames.filter(g =>
