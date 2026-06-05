@@ -6,12 +6,14 @@ import { generateCTA } from '../gennies/cta.js';
 import { dashboard } from '../applications/dashboard.js';
 import { nfl } from '../applications/nfl.js';
 import { stocks } from '../applications/stocks.js';
+import { mlb } from '../applications/mlb.js';
 
 const MODES = {
     NFL: 'mode1',
     DASHBOARD: 'mode2',
     CLOCK: 'mode3',
     STOCKS: 'mode4',
+    MLB: 'mode5',
 };
 
 export { MODES };
@@ -53,7 +55,16 @@ export class ModeService {
                     console.error('Error fetching stock data:', error);
                     return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
                 }
-            })
+            }),
+
+            [MODES.MLB]: new Mode(MODES.MLB, 2000, async () => {
+                try {
+                    return mlb();
+                } catch (error) {
+                    console.error('Error fetching MLB data:', error);
+                    return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+                }
+            }),
         };
 
         this.currentMode = null; // Default mode

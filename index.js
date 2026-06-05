@@ -1,6 +1,12 @@
 import express from 'express';
 import { ModeService, MODES } from './services/modeService.js';  // Correct import path
 import { MqttService } from './services/mqttService.js';  // Make sure this is imported correctly
+import { readFile, writeFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const MLB_TEAMS_CONFIG = path.join(__dirname, 'config/mlb-teams.json');
 
 // Global error handlers to prevent crashes
 process.on('uncaughtException', (error) => {
@@ -14,6 +20,7 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const app = express();
+app.use(express.json());
 const mqttService = new MqttService("mqtt://mosquitto:1883");  // Create the MQTT service instance
 
 // Create the ModeService instance
@@ -34,6 +41,32 @@ app.get('/switch_mode/:mode', (req, res) => {
     }
     modeService.switchMode(modeName);
     res.json({ mode: modeName });
+});
+
+// ── MLB team filter routes ────────────────────────────────────────────────────
+
+app.get('/mlb/teams', async (req, res) => {
+    try {
+        const raw = await readFile(MLB_TEAMS_CONFIG, 'utf8');
+        res.json(JSON.parse(raw));
+    } catch {
+        res.json({ teams: [] });
+    }
+});
+
+app.post('/mlb/teams', async (req, res) => {
+    try {
+        const { teams } = req.body;
+        if (!Array.isArray(teams)) {
+            return res.status(400).json({ error: 'teams must be an array' });
+        }
+        const payload = JSON.stringify({ teams });
+        await writeFile(MLB_TEAMS_CONFIG, payload, 'utf8');
+        res.json({ ok: true, teams });
+    } catch (err) {
+        console.error('Error saving MLB teams config:', err);
+        res.status(500).json({ error: 'Failed to save config' });
+    }
 });
 
 // Start the Express server
