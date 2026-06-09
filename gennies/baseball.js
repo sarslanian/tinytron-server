@@ -148,41 +148,36 @@ const BASE_COORDS = {
     home:   { x: 51, y: 29 },
 };
 
-const BASE_ON   = '0xFFCC00'; // occupied — yellow
-const BASE_OFF  = '0x2e2410'; // empty — dim amber
-const BASE_HOME = '0xffffff'; // home plate always white
-
 const createDiamond = (bases) => {
     const elements = [];
 
-    const drawBase = (coord, color, isEmpty) => {
-        elements.push({
-            type: 'shape', shape: 'rect', fill: color,
-            start_x: coord.x, start_y: coord.y, width: 2, height: 2,
-        });
-        if (isEmpty) {
+    const drawBase = (coord, occupied) => {
+        if (occupied) {
             elements.push({
-                type: 'shape', shape: 'rect', fill: '0x1a1508',
+                type: 'shape', shape: 'rect', fill: '0xFFCC00',
+                start_x: coord.x, start_y: coord.y, width: 3, height: 3,
+            });
+        } else {
+            elements.push({
+                type: 'shape', shape: 'rect', fill: '0xffffff',
+                start_x: coord.x, start_y: coord.y, width: 3, height: 3,
+            });
+            elements.push({
+                type: 'shape', shape: 'rect', fill: '0x000000',
                 start_x: coord.x + 1, start_y: coord.y + 1, width: 1, height: 1,
             });
         }
     };
 
-    const drawBase2x2 = (coord, on) => drawBase(coord, on ? BASE_ON : BASE_OFF, !on);
+    drawBase(BASE_COORDS.second, bases?.second);
+    drawBase(BASE_COORDS.third,  bases?.third);
+    drawBase(BASE_COORDS.first,  bases?.first);
 
-    drawBase2x2(BASE_COORDS.second, bases?.second);
-    drawBase2x2(BASE_COORDS.third,  bases?.third);
-    drawBase2x2(BASE_COORDS.first,  bases?.first);
-
-    // Home plate (always white, no inner dot)
+    // Home plate: white 3×3, no center dot
     elements.push({
-        type: 'shape', shape: 'rect', fill: BASE_HOME,
-        start_x: BASE_COORDS.home.x, start_y: BASE_COORDS.home.y, width: 2, height: 2,
+        type: 'shape', shape: 'rect', fill: '0xffffff',
+        start_x: BASE_COORDS.home.x, start_y: BASE_COORDS.home.y, width: 3, height: 3,
     });
-
-    // No connecting lines — each 1×1 rect is a full Bitmap+Palette+TileGrid in
-    // CircuitPython; pixel-by-pixel lines (~26 objects) push the device into a
-    // MemoryError → MQTT disconnect → retry loop.
 
     return elements;
 };
@@ -191,29 +186,31 @@ const createDiamond = (bases) => {
 const DOT_START_X = 1;
 const DOT_SPACING = 4;
 
-const COUNT_COLORS = {
-    ball:   '0x00CC00',
-    strike: '0xFF4400',
-    out:    '0xffffff',
-    empty:  '0x222222',
-};
-
 const createCountDots = (balls, strikes, outs) => {
     const elements = [];
-    const row = (count, max, onColor, y) => {
+    const row = (count, max, activeColor, y) => {
         for (let i = 0; i < max; i++) {
-            elements.push({
-                type: 'shape', shape: 'rect',
-                fill: i < count ? onColor : COUNT_COLORS.empty,
-                start_x: DOT_START_X + i * DOT_SPACING,
-                start_y: y,
-                width: 3, height: 2,
-            });
+            const x = DOT_START_X + i * DOT_SPACING;
+            if (i < count) {
+                elements.push({
+                    type: 'shape', shape: 'rect', fill: activeColor,
+                    start_x: x, start_y: y, width: 3, height: 3,
+                });
+            } else {
+                elements.push({
+                    type: 'shape', shape: 'rect', fill: '0xffffff',
+                    start_x: x, start_y: y, width: 3, height: 3,
+                });
+                elements.push({
+                    type: 'shape', shape: 'rect', fill: '0x000000',
+                    start_x: x + 1, start_y: y + 1, width: 1, height: 1,
+                });
+            }
         }
     };
-    row(balls   ?? 0, 4, COUNT_COLORS.ball,   22);
-    row(strikes ?? 0, 3, COUNT_COLORS.strike, 26);
-    row(outs    ?? 0, 3, COUNT_COLORS.out,    30);
+    row(balls   ?? 0, 4, '0x00CC00', 22); // green
+    row(strikes ?? 0, 3, '0xFFCC00', 26); // yellow
+    row(outs    ?? 0, 3, '0xFF4400', 29); // red (y=29 so 3px height fits in 32-row display)
     return elements;
 };
 
