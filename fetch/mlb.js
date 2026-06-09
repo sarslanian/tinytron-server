@@ -122,7 +122,7 @@ const parseGame = (game) => {
             color:   MLB_COLORS[mapped.abbr] || '0xffffff',
             wins:    rec?.wins   ?? null,
             losses:  rec?.losses ?? null,
-            starter: teamData?.probablePitcher?.lastName?.toUpperCase() ?? null,
+            starter: teamData?.probablePitcher?.fullName?.split(' ').pop()?.toUpperCase() ?? null,
         };
     };
 

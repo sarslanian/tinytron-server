@@ -29,8 +29,8 @@ const dimColor = (hexStr, factor) => {
     return '0x' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 };
 
-// Right-align text: each Atadore char ≈ 6px wide, returns x so string ends at maxX
-const rightAlignX = (text, maxX = 63) => Math.max(0, maxX - text.length * 6 + 1);
+// Right-align text: small_font.bdf (Teeny Tiny Pixls) DWIDTH=4px per char
+const rightAlignX = (text, maxX = 63) => Math.max(0, maxX - text.length * 4 + 1);
 
 // ── Pre-game layout ───────────────────────────────────────────────────────────
 //
@@ -50,13 +50,13 @@ const createPreGameDisplay = (game) => {
 
     // Away row
     elements.push(
-        { type: 'text', text: game.awayTeam.abbr, x: 0, y: 2, color: game.awayTeam.color, font: 'Atadore' },
-        { type: 'text', text: awayRecord, x: rightAlignX(awayRecord), y: 2, color: '0x888888', font: 'Atadore' },
+        { type: 'text', text: game.awayTeam.abbr, x: 1, y: 4, color: game.awayTeam.color, font: 'Atadore' },
+        { type: 'text', text: awayRecord, x: rightAlignX(awayRecord), y: 4, color: '0x888888', font: 'Atadore' },
     );
 
     // Home row
     elements.push(
-        { type: 'text', text: game.homeTeam.abbr, x: 0, y: 10, color: game.homeTeam.color, font: 'Atadore' },
+        { type: 'text', text: game.homeTeam.abbr, x: 1, y: 10, color: game.homeTeam.color, font: 'Atadore' },
         { type: 'text', text: homeRecord, x: rightAlignX(homeRecord), y: 10, color: '0x888888', font: 'Atadore' },
     );
 
@@ -68,7 +68,7 @@ const createPreGameDisplay = (game) => {
 
     // Game time (CT)
     const timeStr = game.gameTime ? `${game.gameTime} CT` : 'TBD';
-    const timeX = Math.max(0, Math.round((64 - timeStr.length * 6) / 2));
+    const timeX = Math.max(0, Math.round((64 - timeStr.length * 4) / 2));
     elements.push({
         type: 'text', text: timeStr, x: timeX, y: 20, color: '0x0088BB', font: 'Atadore',
     });
@@ -81,8 +81,8 @@ const createPreGameDisplay = (game) => {
     if (awayStarter) {
         elements.push({
             type: 'text', text: awayStarter,
-            x: Math.max(0, 29 - awayStarter.length * 6),
-            y: 27,
+            x: Math.max(0, 29 - awayStarter.length * 4),
+            y: 29,
             color: dimColor(game.awayTeam.color, 0.55),
             font: 'Atadore',
         });
@@ -98,7 +98,7 @@ const createPreGameDisplay = (game) => {
         elements.push({
             type: 'text', text: homeStarter,
             x: 34,
-            y: 27,
+            y: 29,
             color: dimColor(game.homeTeam.color, 0.55),
             font: 'Atadore',
         });
