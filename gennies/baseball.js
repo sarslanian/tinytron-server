@@ -50,14 +50,14 @@ const createPreGameDisplay = (game) => {
 
     // Away row
     elements.push(
-        { type: 'text', text: game.awayTeam.abbr, x: 1, y: 4, color: game.awayTeam.color, font: 'Atadore' },
-        { type: 'text', text: awayRecord, x: rightAlignX(awayRecord), y: 4, color: '0x888888', font: 'Atadore' },
+        { type: 'text', text: game.awayTeam.abbr, x: 1, y: 4, color: game.awayTeam.color },
+        { type: 'text', text: awayRecord, x: rightAlignX(awayRecord), y: 4, color: '0x888888' },
     );
 
     // Home row
     elements.push(
-        { type: 'text', text: game.homeTeam.abbr, x: 1, y: 10, color: game.homeTeam.color, font: 'Atadore' },
-        { type: 'text', text: homeRecord, x: rightAlignX(homeRecord), y: 10, color: '0x888888', font: 'Atadore' },
+        { type: 'text', text: game.homeTeam.abbr, x: 1, y: 10, color: game.homeTeam.color },
+        { type: 'text', text: homeRecord, x: rightAlignX(homeRecord), y: 10, color: '0x888888' },
     );
 
     // Separator
@@ -70,7 +70,7 @@ const createPreGameDisplay = (game) => {
     const timeStr = game.gameTime ? `${game.gameTime} CT` : 'TBD';
     const timeX = Math.max(0, Math.round((64 - timeStr.length * 4) / 2));
     elements.push({
-        type: 'text', text: timeStr, x: timeX, y: 20, color: '0x0088BB', font: 'Atadore',
+        type: 'text', text: timeStr, x: timeX, y: 20, color: '0x0088BB',
     });
 
     // Starting pitchers
@@ -116,10 +116,10 @@ const createPreGameDisplay = (game) => {
 
 // -- Scoreboard (live/final shared) --
 const createScoreboard = (game, awayY, homeY) => [
-    { type: 'text', text: game.awayTeam.abbr, x: 0,  y: awayY, color: game.awayTeam.color, font: 'Atadore' },
-    { type: 'text', text: scoreText(game.awayTeam.score), x: 24, y: awayY, color: '0xFFCC00', font: 'Atadore' },
-    { type: 'text', text: game.homeTeam.abbr, x: 0,  y: homeY, color: game.homeTeam.color, font: 'Atadore' },
-    { type: 'text', text: scoreText(game.homeTeam.score), x: 24, y: homeY, color: '0xFFCC00', font: 'Atadore' },
+    { type: 'text', text: game.awayTeam.abbr, x: 0,  y: awayY, color: game.awayTeam.color },
+    { type: 'text', text: scoreText(game.awayTeam.score), x: 24, y: awayY, color: '0xFFCC00' },
+    { type: 'text', text: game.homeTeam.abbr, x: 0,  y: homeY, color: game.homeTeam.color },
+    { type: 'text', text: scoreText(game.homeTeam.score), x: 24, y: homeY, color: '0xFFCC00' },
 ];
 
 // -- Inning label --
@@ -137,7 +137,7 @@ const createInningLabel = (game) => {
     }
 
     if (!text) return [];
-    return [{ type: 'text', text, x: rightAlignX(text), y: 9, color, font: 'Atadore' }];
+    return [{ type: 'text', text, x: rightAlignX(text), y: 9, color }];
 };
 
 // -- Base diamond (right side) --
@@ -191,21 +191,11 @@ const createCountDots = (balls, strikes, outs) => {
     const row = (count, max, activeColor, y) => {
         for (let i = 0; i < max; i++) {
             const x = DOT_START_X + i * DOT_SPACING;
-            if (i < count) {
-                elements.push({
-                    type: 'shape', shape: 'rect', fill: activeColor,
-                    start_x: x, start_y: y, width: 3, height: 3,
-                });
-            } else {
-                elements.push({
-                    type: 'shape', shape: 'rect', fill: '0xffffff',
-                    start_x: x, start_y: y, width: 3, height: 3,
-                });
-                elements.push({
-                    type: 'shape', shape: 'rect', fill: '0x000000',
-                    start_x: x + 1, start_y: y + 1, width: 1, height: 1,
-                });
-            }
+            elements.push({
+                type: 'shape', shape: 'rect',
+                fill: i < count ? activeColor : '0x2a2a2a',
+                start_x: x, start_y: y, width: 3, height: 3,
+            });
         }
     };
     row(balls   ?? 0, 4, '0x00CC00', 21); // green  — 1px gap below each row
@@ -242,8 +232,8 @@ const createLineScore = (innings, awayColor, homeColor) => {
         const awayDim = awayVal === 0 || awayVal === null ? '0x242424' : awayColor;
         const homeDim = homeVal === 0 || homeVal === null ? '0x242424' : homeColor;
 
-        elements.push({ type: 'text', text: awayChar, x: originX, y: 20, color: awayDim, font: 'Atadore' });
-        elements.push({ type: 'text', text: homeChar, x: originX, y: 27, color: homeDim, font: 'Atadore' });
+        elements.push({ type: 'text', text: awayChar, x: originX, y: 20, color: awayDim });
+        elements.push({ type: 'text', text: homeChar, x: originX, y: 27, color: homeDim });
     });
 
     return elements;
@@ -277,9 +267,9 @@ const createFinalDisplay = (game) => {
 // ── No-games display ──────────────────────────────────────────────────────────
 
 export const createNoGamesDisplay = () => [
-    { type: 'text', text: 'MLB',      x: 22, y: 5,  color: '0x0066CC', font: 'Atadore' },
-    { type: 'text', text: 'NO GAMES', x: 2,  y: 14, color: '0xffffff', font: 'Atadore' },
-    { type: 'text', text: 'TODAY',    x: 14, y: 23, color: '0x888888', font: 'Atadore' },
+    { type: 'text', text: 'MLB',      x: 22, y: 5,  color: '0x0066CC' },
+    { type: 'text', text: 'NO GAMES', x: 2,  y: 14, color: '0xffffff' },
+    { type: 'text', text: 'TODAY',    x: 14, y: 23, color: '0x888888' },
 ];
 
 // ── Main entry point ──────────────────────────────────────────────────────────
