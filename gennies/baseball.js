@@ -142,10 +142,10 @@ const createInningLabel = (game) => {
 
 // -- Base diamond (right side) --
 const BASE_COORDS = {
-    second: { x: 51, y: 17 },
-    third:  { x: 43, y: 23 },
-    first:  { x: 59, y: 23 },
-    home:   { x: 51, y: 29 },
+    second: { x: 51, y: 16 },
+    third:  { x: 43, y: 22 },
+    first:  { x: 59, y: 22 },
+    home:   { x: 51, y: 28 },
 };
 
 const createDiamond = (bases) => {
@@ -193,14 +193,14 @@ const createCountDots = (balls, strikes, outs) => {
             const x = DOT_START_X + i * DOT_SPACING;
             elements.push({
                 type: 'shape', shape: 'rect',
-                fill: i < count ? activeColor : '0x2a2a2a',
+                fill: i < count ? activeColor : '0xffffff',
                 start_x: x, start_y: y, width: 3, height: 3,
             });
         }
     };
-    row(balls   ?? 0, 4, '0x00CC00', 21); // green  — 1px gap below each row
-    row(strikes ?? 0, 3, '0xFFCC00', 25); // yellow
-    row(outs    ?? 0, 3, '0xFF4400', 29); // red
+    row(balls   ?? 0, 4, '0x00CC00', 20); // green  — 1px gap below each row
+    row(strikes ?? 0, 3, '0xFFCC00', 24); // yellow
+    row(outs    ?? 0, 3, '0xFF4400', 28); // red
     return elements;
 };
 
