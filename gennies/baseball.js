@@ -180,34 +180,9 @@ const createDiamond = (bases) => {
         start_x: BASE_COORDS.home.x, start_y: BASE_COORDS.home.y, width: 2, height: 2,
     });
 
-    // Connecting lines between base midpoints (dim)
-    const mid = (coord) => ({ x: coord.x + 1, y: coord.y + 1 });
-    const LINE_COLOR = '0x1a1a1a';
-
-    const drawLine = (a, b) => {
-        const ma = mid(a), mb = mid(b);
-        const dx = mb.x - ma.x, dy = mb.y - ma.y;
-        const steps = Math.max(Math.abs(dx), Math.abs(dy));
-        for (let i = 1; i < steps; i++) {
-            const px = Math.round(ma.x + dx * i / steps);
-            const py = Math.round(ma.y + dy * i / steps);
-            // Skip if inside a base rect
-            const inBase = Object.values(BASE_COORDS).some(c =>
-                px >= c.x && px < c.x + 2 && py >= c.y && py < c.y + 2
-            );
-            if (!inBase) {
-                elements.push({
-                    type: 'shape', shape: 'rect', fill: LINE_COLOR,
-                    start_x: px, start_y: py, width: 1, height: 1,
-                });
-            }
-        }
-    };
-
-    drawLine(BASE_COORDS.second, BASE_COORDS.third);
-    drawLine(BASE_COORDS.third,  BASE_COORDS.home);
-    drawLine(BASE_COORDS.home,   BASE_COORDS.first);
-    drawLine(BASE_COORDS.first,  BASE_COORDS.second);
+    // No connecting lines — each 1×1 rect is a full Bitmap+Palette+TileGrid in
+    // CircuitPython; pixel-by-pixel lines (~26 objects) push the device into a
+    // MemoryError → MQTT disconnect → retry loop.
 
     return elements;
 };
