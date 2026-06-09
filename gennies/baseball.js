@@ -222,48 +222,16 @@ const createCountDots = (balls, strikes, outs) => {
 //  y=20:  away line score
 //  y=27:  home line score
 
-// Mini 3×5 bitmap font for line score digits
-const MINI_DIGITS = {
-    '0': [[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
-    '1': [[0,1,0],[1,1,0],[0,1,0],[0,1,0],[1,1,1]],
-    '2': [[1,1,1],[0,0,1],[1,1,1],[1,0,0],[1,1,1]],
-    '3': [[1,1,1],[0,0,1],[0,1,1],[0,0,1],[1,1,1]],
-    '4': [[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1]],
-    '5': [[1,1,1],[1,0,0],[1,1,1],[0,0,1],[1,1,1]],
-    '6': [[1,1,0],[1,0,0],[1,1,1],[1,0,1],[1,1,1]],
-    '7': [[1,1,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0]],
-    '8': [[1,1,1],[1,0,1],[1,1,1],[1,0,1],[1,1,1]],
-    '9': [[1,1,1],[1,0,1],[1,1,1],[0,0,1],[0,1,1]],
-    '-': [[0,0,0],[0,0,0],[1,1,1],[0,0,0],[0,0,0]],
-};
-
-const drawMiniDigit = (char, originX, originY, color) => {
-    const bitmap = MINI_DIGITS[char] || MINI_DIGITS['-'];
-    const elements = [];
-    for (let row = 0; row < bitmap.length; row++) {
-        for (let col = 0; col < bitmap[row].length; col++) {
-            if (bitmap[row][col]) {
-                elements.push({
-                    type: 'shape', shape: 'rect', fill: color,
-                    start_x: originX + col, start_y: originY + row, width: 1, height: 1,
-                });
-            }
-        }
-    }
-    return elements;
-};
-
 const createLineScore = (innings, awayColor, homeColor) => {
     const elements = [];
     const n = innings.length;
     if (n === 0) return elements;
 
-    const PAD = 3;
-    const AVAILABLE = 64 - PAD * 2; // 58px
+    const PAD = 3, AVAILABLE = 58;
 
     innings.forEach((inn, i) => {
         const colCenter = Math.round(PAD + (i + 0.5) * AVAILABLE / n) - 1;
-        const originX = colCenter - 1; // 3px wide digit, center it
+        const originX = Math.max(0, colCenter - 1);
 
         const awayVal = inn.awayRuns ?? null;
         const homeVal = inn.homeRuns ?? null;
@@ -274,8 +242,8 @@ const createLineScore = (innings, awayColor, homeColor) => {
         const awayDim = awayVal === 0 || awayVal === null ? '0x242424' : awayColor;
         const homeDim = homeVal === 0 || homeVal === null ? '0x242424' : homeColor;
 
-        elements.push(...drawMiniDigit(awayChar, originX, 20, awayDim));
-        elements.push(...drawMiniDigit(homeChar, originX, 27, homeDim));
+        elements.push({ type: 'text', text: awayChar, x: originX, y: 20, color: awayDim, font: 'Atadore' });
+        elements.push({ type: 'text', text: homeChar, x: originX, y: 27, color: homeDim, font: 'Atadore' });
     });
 
     return elements;
