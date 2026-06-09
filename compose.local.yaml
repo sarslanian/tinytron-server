@@ -1,0 +1,32 @@
+# Local dev: starts only mosquitto so you can run the server and web app natively.
+# Usage: docker compose -f compose.local.yaml up -d
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto-local
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    environment:
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_local_data:/mosquitto/data
+    entrypoint: >
+      sh -c "
+        mosquitto_passwd -c -b /mosquitto/config/passwd \"$$MQTT_USERNAME\" \"$$MQTT_PASSWORD\" &&
+        chown mosquitto:mosquitto /mosquitto/config/passwd &&
+        chmod 0600 /mosquitto/config/passwd &&
+        exec /docker-entrypoint.sh mosquitto -c /mosquitto/config/mosquitto.conf
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3 -u $${MQTT_USERNAME} -P $${MQTT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  mosquitto_local_data:

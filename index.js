@@ -16,7 +16,7 @@ process.on('unhandledRejection', (reason, promise) => {
 
 const app = express();
 app.use(express.json());
-const mqttService = new MqttService("mqtt://mosquitto:1883");  // Create the MQTT service instance
+const mqttService = new MqttService(process.env.MQTT_URL || "mqtt://mosquitto:1883");
 
 // Create the ModeService instance
 const modeService = new ModeService(mqttService);  

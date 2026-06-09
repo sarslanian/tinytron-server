@@ -93,12 +93,12 @@ const normalizeStatus = (status) => {
     return 'pre'; // Preview / Scheduled / Postponed etc.
 };
 
-// Convert UTC game time to Pacific display time (e.g. "7:10 PM")
-const formatGameTimePT = (gameDate) => {
+// Convert UTC game time to Central display time (e.g. "7:10 PM")
+const formatGameTimeCT = (gameDate) => {
     try {
         const d = new Date(gameDate);
         return d.toLocaleTimeString('en-US', {
-            timeZone: 'America/Los_Angeles',
+            timeZone: 'America/Chicago',
             hour: 'numeric',
             minute: '2-digit',
             hour12: true,
@@ -111,14 +111,18 @@ const formatGameTimePT = (gameDate) => {
 // Parse a single game object from the API response into normalized GameData
 const parseGame = (game) => {
     const teamInfo = (teamData) => {
-        const id = teamData?.team?.id;
+        const id     = teamData?.team?.id;
         const mapped = MLB_TEAM_MAP[id] || { abbr: '???', name: teamData?.team?.name || '???' };
+        const rec    = teamData?.leagueRecord;
         return {
             id,
-            abbr: mapped.abbr,
-            name: mapped.name,
-            score: teamData?.score ?? null,
-            color: MLB_COLORS[mapped.abbr] || '0xffffff',
+            abbr:    mapped.abbr,
+            name:    mapped.name,
+            score:   teamData?.score ?? null,
+            color:   MLB_COLORS[mapped.abbr] || '0xffffff',
+            wins:    rec?.wins   ?? null,
+            losses:  rec?.losses ?? null,
+            starter: teamData?.probablePitcher?.lastName?.toUpperCase() ?? null,
         };
     };
 
@@ -139,7 +143,7 @@ const parseGame = (game) => {
         status,
         detailedState: game.status?.detailedState || '',
         delayReason: game.status?.reason || null,
-        gameTime: formatGameTimePT(game.gameDate),
+        gameTime: formatGameTimeCT(game.gameDate),
         awayTeam: away,
         homeTeam: home,
         inning: ls.currentInning || null,
@@ -168,7 +172,7 @@ export const fetchMLBGames = async () => {
     }
 
     const dateStr = getPTDateString();
-    const url = `${MLB_BASE}/schedule?sportId=1&date=${dateStr}&hydrate=linescore`;
+    const url = `${MLB_BASE}/schedule?sportId=1&date=${dateStr}&hydrate=linescore,probablePitcher`;
 
     try {
         console.log(`[MLB] Fetching schedule for PT date: ${dateStr}`);
