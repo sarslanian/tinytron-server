@@ -29,7 +29,7 @@ const dimColor = (hexStr, factor) => {
     return '0x' + ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
 };
 
-// Right-align text: small_font.bdf (Teeny Tiny Pixls) DWIDTH=4px per char
+// Right-align v: small_font.bdf (Teeny Tiny Pixls) DWIDTH=4px per char
 const rightAlignX = (text, maxX = 63) => Math.max(0, maxX - text.length * 4 + 1);
 
 // ── Pre-game layout ───────────────────────────────────────────────────────────
@@ -50,27 +50,27 @@ const createPreGameDisplay = (game) => {
 
     // Away row
     elements.push(
-        { type: 'text', text: game.awayTeam.abbr, x: 1, y: 4, color: game.awayTeam.color },
-        { type: 'text', text: awayRecord, x: rightAlignX(awayRecord), y: 4, color: '0x888888' },
+        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4, c: game.awayTeam.color },
+        { t: 't', v: awayRecord, x: rightAlignX(awayRecord), y: 4, c: '0x888888' },
     );
 
     // Home row
     elements.push(
-        { type: 'text', text: game.homeTeam.abbr, x: 1, y: 10, color: game.homeTeam.color },
-        { type: 'text', text: homeRecord, x: rightAlignX(homeRecord), y: 10, color: '0x888888' },
+        { t: 't', v: game.homeTeam.abbr, x: 1, y: 10, c: game.homeTeam.color },
+        { t: 't', v: homeRecord, x: rightAlignX(homeRecord), y: 10, c: '0x888888' },
     );
 
     // Separator
     elements.push({
-        type: 'shape', shape: 'rect', fill: '0x2a2a2a',
-        start_x: 0, start_y: 17, width: 64, height: 1,
+        t: 's', f: '0x2a2a2a',
+        x: 0, y: 17, w:64, h:1,
     });
 
     // Game time (CT)
     const timeStr = game.gameTime ? `${game.gameTime} CT` : 'TBD';
     const timeX = Math.max(0, Math.round((64 - timeStr.length * 4) / 2));
     elements.push({
-        type: 'text', text: timeStr, x: timeX, y: 20, color: '0x0088BB',
+        t: 't', v: timeStr, x: timeX, y: 20, c: '0x0088BB',
     });
 
     // Starting pitchers
@@ -80,27 +80,25 @@ const createPreGameDisplay = (game) => {
 
     if (awayStarter) {
         elements.push({
-            type: 'text', text: awayStarter,
+            t: 't', v: awayStarter,
             x: Math.max(0, 29 - awayStarter.length * 4),
             y: 29,
-            color: dimColor(game.awayTeam.color, 0.55),
-            font: 'Atadore',
+            c: dimColor(game.awayTeam.color, 0.55),
         });
     }
 
     // Center divider dot
     elements.push({
-        type: 'shape', shape: 'rect', fill: '0x333333',
-        start_x: 31, start_y: 29, width: 1, height: 1,
+        t: 's', f: '0x333333',
+        x: 31, y: 29, w:1, h:1,
     });
 
     if (homeStarter) {
         elements.push({
-            type: 'text', text: homeStarter,
+            t: 't', v: homeStarter,
             x: 34,
             y: 29,
-            color: dimColor(game.homeTeam.color, 0.55),
-            font: 'Atadore',
+            c: dimColor(game.homeTeam.color, 0.55),
         });
     }
 
@@ -116,10 +114,10 @@ const createPreGameDisplay = (game) => {
 
 // -- Scoreboard (live/final shared) --
 const createScoreboard = (game, awayY, homeY) => [
-    { type: 'text', text: game.awayTeam.abbr, x: 0,  y: awayY, color: game.awayTeam.color },
-    { type: 'text', text: scoreText(game.awayTeam.score), x: 24, y: awayY, color: '0xFFCC00' },
-    { type: 'text', text: game.homeTeam.abbr, x: 0,  y: homeY, color: game.homeTeam.color },
-    { type: 'text', text: scoreText(game.homeTeam.score), x: 24, y: homeY, color: '0xFFCC00' },
+    { t: 't', v: game.awayTeam.abbr, x: 1,  y: awayY, c: game.awayTeam.color },
+    { t: 't', v: scoreText(game.awayTeam.score), x: 24, y: awayY, c: '0xFFCC00' },
+    { t: 't', v: game.homeTeam.abbr, x: 1,  y: homeY, c: game.homeTeam.color },
+    { t: 't', v: scoreText(game.homeTeam.score), x: 24, y: homeY, c: '0xFFCC00' },
 ];
 
 // -- Inning label --
@@ -137,15 +135,16 @@ const createInningLabel = (game) => {
     }
 
     if (!text) return [];
-    return [{ type: 'text', text, x: rightAlignX(text), y: 9, color }];
+    const x = Math.max(0, Math.round(47 - text.length * 2));
+    return [{ t: 't', v: text, x, y: 9, c: color }];
 };
 
 // -- Base diamond (right side) --
 const BASE_COORDS = {
-    second: { x: 51, y: 16 },
-    third:  { x: 43, y: 22 },
-    first:  { x: 59, y: 22 },
-    home:   { x: 51, y: 28 },
+    second: { x: 46, y: 16 },
+    third:  { x: 40, y: 22 },
+    first:  { x: 52, y: 22 },
+    home:   { x: 46, y: 28 },
 };
 
 const createDiamond = (bases) => {
@@ -154,17 +153,17 @@ const createDiamond = (bases) => {
     const drawBase = (coord, occupied) => {
         if (occupied) {
             elements.push({
-                type: 'shape', shape: 'rect', fill: '0xFFCC00',
-                start_x: coord.x, start_y: coord.y, width: 3, height: 3,
+                t: 's', f: '0xFFCC00',
+                x: coord.x, y: coord.y, w:3, h:3,
             });
         } else {
             elements.push({
-                type: 'shape', shape: 'rect', fill: '0xffffff',
-                start_x: coord.x, start_y: coord.y, width: 3, height: 3,
+                t: 's', f: '0xffffff',
+                x: coord.x, y: coord.y, w:3, h:3,
             });
             elements.push({
-                type: 'shape', shape: 'rect', fill: '0x000000',
-                start_x: coord.x + 1, start_y: coord.y + 1, width: 1, height: 1,
+                t: 's', f: '0x000000',
+                x: coord.x + 1, y: coord.y + 1, w:1, h:1,
             });
         }
     };
@@ -175,8 +174,8 @@ const createDiamond = (bases) => {
 
     // Home plate: white 3×3, no center dot
     elements.push({
-        type: 'shape', shape: 'rect', fill: '0xffffff',
-        start_x: BASE_COORDS.home.x, start_y: BASE_COORDS.home.y, width: 3, height: 3,
+        t: 's', f: '0xffffff',
+        x: BASE_COORDS.home.x, y: BASE_COORDS.home.y, w:3, h:3,
     });
 
     return elements;
@@ -193,11 +192,13 @@ const createCountDots = (balls, strikes, outs) => {
     const row = (count, emptySlots, activeColor, y) => {
         const total = Math.max(count, emptySlots);
         for (let i = 0; i < total; i++) {
-            elements.push({
-                type: 'shape', shape: 'rect',
-                fill: i < count ? activeColor : '0xffffff',
-                start_x: DOT_START_X + i * DOT_SPACING, start_y: y, width: 3, height: 3,
-            });
+            const sx = DOT_START_X + i * DOT_SPACING;
+            if (i < count) {
+                elements.push({ t: 's', f: activeColor, x: sx, y: y, w:3, h:3 });
+            } else {
+                elements.push({ t: 's', f: '0xffffff', x: sx, y: y, w:3, h:3 });
+                elements.push({ t: 's', f: '0x000000', x: sx + 1, y: y + 1, w:1, h:1 });
+            }
         }
     };
     row(balls   ?? 0, 3, '0x00CC00', 20);
@@ -234,8 +235,8 @@ const createLineScore = (innings, awayColor, homeColor) => {
         const awayDim = awayVal === 0 || awayVal === null ? '0x242424' : awayColor;
         const homeDim = homeVal === 0 || homeVal === null ? '0x242424' : homeColor;
 
-        elements.push({ type: 'text', text: awayChar, x: originX, y: 20, color: awayDim });
-        elements.push({ type: 'text', text: homeChar, x: originX, y: 27, color: homeDim });
+        elements.push({ t: 't', v: awayChar, x: originX, y: 20, c: awayDim });
+        elements.push({ t: 't', v: homeChar, x: originX, y: 27, c: homeDim });
     });
 
     return elements;
@@ -251,11 +252,10 @@ const createFinalDisplay = (game) => {
     const extraInnings = game.innings?.length > 9 ? game.innings.length : null;
     const finText = extraInnings ? `F/${extraInnings}` : 'FIN';
     elements.push({
-        type: 'text', text: finText,
+        t: 't', v: finText,
         x: rightAlignX(finText),
         y: 7,
-        color: '0x444444',
-        font: 'Atadore',
+        c: '0x444444',
     });
 
     // Line score
@@ -269,9 +269,9 @@ const createFinalDisplay = (game) => {
 // ── No-games display ──────────────────────────────────────────────────────────
 
 export const createNoGamesDisplay = () => [
-    { type: 'text', text: 'MLB',      x: 22, y: 5,  color: '0x0066CC' },
-    { type: 'text', text: 'NO GAMES', x: 2,  y: 14, color: '0xffffff' },
-    { type: 'text', text: 'TODAY',    x: 14, y: 23, color: '0x888888' },
+    { t: 't', v: 'MLB',      x: 22, y: 5,  c: '0x0066CC' },
+    { t: 't', v: 'NO GAMES', x: 2,  y: 14, c: '0xffffff' },
+    { t: 't', v: 'TODAY',    x: 14, y: 23, c: '0x888888' },
 ];
 
 // ── Main entry point ──────────────────────────────────────────────────────────
