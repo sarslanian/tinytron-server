@@ -188,19 +188,21 @@ const DOT_SPACING = 4;
 
 const createCountDots = (balls, strikes, outs) => {
     const elements = [];
-    const row = (count, max, activeColor, y) => {
-        for (let i = 0; i < max; i++) {
-            const x = DOT_START_X + i * DOT_SPACING;
+    // emptySlots: how many white dots show when count=0.
+    // Extra slot (4th ball, 3rd strike/out) only appears when active.
+    const row = (count, emptySlots, activeColor, y) => {
+        const total = Math.max(count, emptySlots);
+        for (let i = 0; i < total; i++) {
             elements.push({
                 type: 'shape', shape: 'rect',
                 fill: i < count ? activeColor : '0xffffff',
-                start_x: x, start_y: y, width: 3, height: 3,
+                start_x: DOT_START_X + i * DOT_SPACING, start_y: y, width: 3, height: 3,
             });
         }
     };
-    row(balls   ?? 0, 4, '0x00CC00', 20); // green  — 1px gap below each row
-    row(strikes ?? 0, 3, '0xFFCC00', 24); // yellow
-    row(outs    ?? 0, 3, '0xFF4400', 28); // red
+    row(balls   ?? 0, 3, '0x00CC00', 20);
+    row(strikes ?? 0, 2, '0xFFCC00', 24);
+    row(outs    ?? 0, 2, '0xFF4400', 28);
     return elements;
 };
 
