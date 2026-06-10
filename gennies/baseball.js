@@ -232,11 +232,11 @@ const createLineScore = (innings, awayColor, homeColor) => {
         const awayChar = awayVal === null ? '-' : String(Math.min(awayVal, 9));
         const homeChar = homeVal === null ? '-' : String(Math.min(homeVal, 9));
 
-        const awayDim = awayVal === 0 || awayVal === null ? '0x242424' : awayColor;
-        const homeDim = homeVal === 0 || homeVal === null ? '0x242424' : homeColor;
+        const awayDim = awayVal === null ? '0x444444' : awayVal === 0 ? '0x888888' : awayColor;
+        const homeDim = homeVal === null ? '0x444444' : homeVal === 0 ? '0x888888' : homeColor;
 
-        elements.push({ t: 't', v: awayChar, x: originX, y: 20, c: awayDim });
-        elements.push({ t: 't', v: homeChar, x: originX, y: 27, c: homeDim });
+        elements.push({ t: 't', v: awayChar, x: originX, y: 22, c: awayDim });
+        elements.push({ t: 't', v: homeChar, x: originX, y: 29, c: homeDim });
     });
 
     return elements;
@@ -245,18 +245,14 @@ const createLineScore = (innings, awayColor, homeColor) => {
 const createFinalDisplay = (game) => {
     const elements = [];
 
-    // Scoreboard
-    elements.push(...createScoreboard(game, 3, 11));
+    // Scoreboard — same y positions as live view
+    elements.push(...createScoreboard(game, 4, 14));
 
-    // FIN / F/extra label
+    // FINAL label — centered in right half of display
     const extraInnings = game.innings?.length > 9 ? game.innings.length : null;
-    const finText = extraInnings ? `F/${extraInnings}` : 'FIN';
-    elements.push({
-        t: 't', v: finText,
-        x: rightAlignX(finText),
-        y: 7,
-        c: '0x444444',
-    });
+    const finText = extraInnings ? `F/${extraInnings}` : 'FINAL';
+    const finX = Math.round(48 - finText.length * 2);
+    elements.push({ t: 't', v: finText, x: finX, y: 9, c: '0x444444' });
 
     // Line score
     if (game.innings?.length > 0) {
