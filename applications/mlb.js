@@ -11,7 +11,7 @@ let currentGameIndex = 0;
 
 // Sort games: live first, then pre-game (by start time), then finals/delayed/suspended
 const sortGames = (gameList) => {
-    const order = { live: 0, delayed: 1, suspended: 2, pre: 3, final: 4 };
+    const order = { live: 0, delayed: 1, suspended: 2, pre: 3, final: 4, postponed: 5, cancelled: 5 };
     return [...gameList].sort((a, b) => (order[a.status] ?? 5) - (order[b.status] ?? 5));
 };
 

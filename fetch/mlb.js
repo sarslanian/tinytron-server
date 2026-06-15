@@ -84,13 +84,30 @@ const getPTDateString = () => {
 const normalizeStatus = (status) => {
     const abs = status?.abstractGameState;
     const detail = status?.detailedState || '';
+
+    // Check postponed/cancelled BEFORE the 'Final' check — postponed
+    // games report abstractGameState: 'Final' with no score.
+    if (detail.includes('Postponed')) return 'postponed';
+    if (detail.includes('Cancelled') || detail.includes('Canceled')) return 'cancelled';
+
     if (abs === 'Final') return 'final';
     if (abs === 'Live') {
         if (detail.includes('Delayed')) return 'delayed';
         if (detail.includes('Suspended')) return 'suspended';
         return 'live';
     }
-    return 'pre'; // Preview / Scheduled / Postponed etc.
+    return 'pre'; // Preview / Scheduled
+};
+
+// Format a reschedule date (e.g. "2026-09-04") as "9/4"
+const formatRescheduleDate = (dateStr) => {
+    if (!dateStr) return null;
+    try {
+        const d = new Date(dateStr);
+        return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
+    } catch {
+        return null;
+    }
 };
 
 // Convert UTC game time to Central display time (e.g. "7:10 PM")
@@ -143,6 +160,7 @@ const parseGame = (game) => {
         status,
         detailedState: game.status?.detailedState || '',
         delayReason: game.status?.reason || null,
+        rescheduleDate: formatRescheduleDate(game.rescheduleDate),
         gameTime: formatGameTimeCT(game.gameDate),
         awayTeam: away,
         homeTeam: home,

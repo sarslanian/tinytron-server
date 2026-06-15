@@ -262,6 +262,51 @@ const createFinalDisplay = (game) => {
     return elements;
 };
 
+// ── Postponed/Cancelled layout ────────────────────────────────────────────────
+//
+//  y=4:   [AWAY abbr]
+//  y=14:  [HOME abbr]
+//  y=9:   "PPD" label (right-aligned, like FINAL)
+//  y=20:  reason (e.g. "RAIN")
+//  y=27:  reschedule date (e.g. "RESCH 9/4") if available
+
+const REASON_LABELS = {
+    'Inclement Weather': 'RAIN',
+    'Wet Grounds': 'WET FIELD',
+    'Field Conditions': 'FIELD',
+};
+
+const createPostponedOrCancelledDisplay = (game) => {
+    const elements = [];
+
+    // Team abbreviations only — no scores to show
+    elements.push(
+        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4,  c: game.awayTeam.color },
+        { t: 't', v: game.homeTeam.abbr, x: 1, y: 14, c: game.homeTeam.color },
+    );
+
+    // Status label
+    const label = game.status === 'cancelled' ? 'CNCL' : 'PPD';
+    const labelX = Math.round(48 - label.length * 2);
+    elements.push({ t: 't', v: label, x: labelX, y: 9, c: '0xFF4400' });
+
+    // Reason (e.g. "RAIN")
+    if (game.delayReason) {
+        const reasonText = REASON_LABELS[game.delayReason] || game.delayReason.toUpperCase().slice(0, 10);
+        const reasonX = Math.max(0, Math.round((64 - reasonText.length * 4) / 2));
+        elements.push({ t: 't', v: reasonText, x: reasonX, y: 20, c: '0x888888' });
+    }
+
+    // Reschedule date (e.g. "RESCH 9/4")
+    if (game.rescheduleDate) {
+        const reschedText = `RESCH ${game.rescheduleDate}`;
+        const reschX = Math.max(0, Math.round((64 - reschedText.length * 4) / 2));
+        elements.push({ t: 't', v: reschedText, x: reschX, y: 27, c: '0x0088BB' });
+    }
+
+    return elements;
+};
+
 // ── No-games display ──────────────────────────────────────────────────────────
 
 export const createNoGamesDisplay = () => [
@@ -273,6 +318,9 @@ export const createNoGamesDisplay = () => [
 // ── Main entry point ──────────────────────────────────────────────────────────
 
 export const createGameDisplay = (game) => {
+    if (game.status === 'postponed' || game.status === 'cancelled') {
+        return createPostponedOrCancelledDisplay(game);
+    }
     if (game.status === 'pre') {
         return createPreGameDisplay(game);
     }
