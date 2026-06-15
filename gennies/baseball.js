@@ -50,13 +50,13 @@ const createPreGameDisplay = (game) => {
 
     // Away row
     elements.push(
-        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4, c: game.awayTeam.color },
+        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4, c: game.awayTeam.color, b: true },
         { t: 't', v: awayRecord, x: rightAlignX(awayRecord), y: 4, c: '0x888888' },
     );
 
     // Home row
     elements.push(
-        { t: 't', v: game.homeTeam.abbr, x: 1, y: 10, c: game.homeTeam.color },
+        { t: 't', v: game.homeTeam.abbr, x: 1, y: 10, c: game.homeTeam.color, b: true },
         { t: 't', v: homeRecord, x: rightAlignX(homeRecord), y: 10, c: '0x888888' },
     );
 
@@ -114,10 +114,10 @@ const createPreGameDisplay = (game) => {
 
 // -- Scoreboard (live/final shared) --
 const createScoreboard = (game, awayY, homeY) => [
-    { t: 't', v: game.awayTeam.abbr, x: 1,  y: awayY, c: game.awayTeam.color },
-    { t: 't', v: scoreText(game.awayTeam.score), x: 24, y: awayY, c: '0xFFCC00' },
-    { t: 't', v: game.homeTeam.abbr, x: 1,  y: homeY, c: game.homeTeam.color },
-    { t: 't', v: scoreText(game.homeTeam.score), x: 24, y: homeY, c: '0xFFCC00' },
+    { t: 't', v: game.awayTeam.abbr, x: 1,  y: awayY, c: game.awayTeam.color, b: true },
+    { t: 't', v: scoreText(game.awayTeam.score), x: 24, y: awayY, c: '0xFFCC00', b: true },
+    { t: 't', v: game.homeTeam.abbr, x: 1,  y: homeY, c: game.homeTeam.color, b: true },
+    { t: 't', v: scoreText(game.homeTeam.score), x: 24, y: homeY, c: '0xFFCC00', b: true },
 ];
 
 // -- Inning label --
@@ -136,7 +136,7 @@ const createInningLabel = (game) => {
 
     if (!text) return [];
     const x = Math.max(0, Math.round(47 - text.length * 2));
-    return [{ t: 't', v: text, x, y: 9, c: color }];
+    return [{ t: 't', v: text, x, y: 9, c: color, b: true }];
 };
 
 // -- Base diamond (right side) --
@@ -252,7 +252,7 @@ const createFinalDisplay = (game) => {
     const extraInnings = game.innings?.length > 9 ? game.innings.length : null;
     const finText = extraInnings ? `F/${extraInnings}` : 'FINAL';
     const finX = Math.round(48 - finText.length * 2);
-    elements.push({ t: 't', v: finText, x: finX, y: 9, c: '0x444444' });
+    elements.push({ t: 't', v: finText, x: finX, y: 9, c: '0x444444', b: true });
 
     // Line score
     if (game.innings?.length > 0) {
@@ -281,14 +281,14 @@ const createPostponedOrCancelledDisplay = (game) => {
 
     // Team abbreviations only — no scores to show
     elements.push(
-        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4,  c: game.awayTeam.color },
-        { t: 't', v: game.homeTeam.abbr, x: 1, y: 14, c: game.homeTeam.color },
+        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4,  c: game.awayTeam.color, b: true },
+        { t: 't', v: game.homeTeam.abbr, x: 1, y: 14, c: game.homeTeam.color, b: true },
     );
 
     // Status label
     const label = game.status === 'cancelled' ? 'CNCL' : 'PPD';
     const labelX = Math.round(48 - label.length * 2);
-    elements.push({ t: 't', v: label, x: labelX, y: 9, c: '0xFF4400' });
+    elements.push({ t: 't', v: label, x: labelX, y: 9, c: '0xFF4400', b: true });
 
     // Reason (e.g. "RAIN")
     if (game.delayReason) {
