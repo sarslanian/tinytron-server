@@ -29,7 +29,7 @@ export class ModeService {
                   return nfl(); // Return the generated NFL data
                 } catch (error) {
                     console.error('Error fetching NFL data:', error);
-                    return { type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" };
+                    return { t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" };
                 }
             }),
 
@@ -38,14 +38,14 @@ export class ModeService {
                     return dashboard(); // Return the generated dashboard data
                 } catch (error) {
                     console.error('Error fetching dashboard data:', error);
-                    return { type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" };
+                    return { t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" };
                 }
             }),
 
             [MODES.CLOCK]: new Mode(MODES.CLOCK, 5000, () => {
                 const now = new Date();
                 const timeString = now.toTimeString().split(' ')[0]; // HH:MM:SS format
-                return { type: "text", text: timeString, x: 10, y: 10, color: "0xFFCC00" };
+                return { t: 't', v: timeString, x: 10, y: 10, c: "0xFFCC00" };
             }),
 
             [MODES.STOCKS]: new Mode(MODES.STOCKS, 5000, async () => {
@@ -53,7 +53,7 @@ export class ModeService {
                     return stocks(['AAPL']); // Start with Apple stock
                 } catch (error) {
                     console.error('Error fetching stock data:', error);
-                    return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
                 }
             }),
 
@@ -62,7 +62,7 @@ export class ModeService {
                     return mlb();
                 } catch (error) {
                     console.error('Error fetching MLB data:', error);
-                    return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
                 }
             }),
         };
@@ -109,7 +109,7 @@ export class ModeService {
         } catch (error) {
             console.error('Error in publishMessage:', error);
             // Publish error message instead of crashing
-            const errorPayload = [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+            const errorPayload = [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
             this.mqttService.publish("tinytron", JSON.stringify({ data: errorPayload }));
         }
     }

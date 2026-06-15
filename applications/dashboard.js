@@ -21,7 +21,7 @@ const dashboard = async () => {
         if (ctaData) {
             cta = await generateCTA(ctaData, 1, 23, "0x8B4513");
         } else {
-            cta = { type: "text", text: "CTA unavailable", x: 1, y: 23, color: "0xFF0000" };
+            cta = { t: 't', v: "CTA unavailable", x: 1, y: 23, c: "0xFF0000" };
         }
         
         // Only add weather components if weatherData is available
@@ -40,18 +40,10 @@ const dashboard = async () => {
             });
         } else {
             // Add error message if weather data is unavailable
-            payload.push({ type: "text", text: "Weather unavailable", x: 1, y: 10, color: "0xFF0000" });
+            payload.push({ t: 't', v: "Weather unavailable", x: 1, y: 10, c: "0xFF0000" });
         }
 
-        const ctaLine =  {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0x8B4513",
-            "start_x": 0,
-            "start_y":18,
-            "width": 64,
-            "height": 1
-        }
+        const ctaLine = { t: 's', f: "0x8B4513", x: 0, y: 18, w: 64, h: 1 };
 
         payload.push(cta);
         payload.push(date);
@@ -65,15 +57,14 @@ const dashboard = async () => {
         // Return minimal payload with error message
         try {
             payload = [
-                { type: "text", text: "Error loading data", x: 1, y: 4, color: "0xFF0000" },
+                { t: 't', v: "Error loading data", x: 1, y: 4, c: "0xFF0000" },
                 await generateDate(1, 10, "0x8a8a8a"),
                 ...await generateTime(46, 10, "0x8a8a8a")
             ];
         } catch (fallbackError) {
             console.error('Error in dashboard fallback:', fallbackError);
-            // Ultimate fallback - just return error message
             payload = [
-                { type: "text", text: "Error loading data", x: 1, y: 4, color: "0xFF0000" }
+                { t: 't', v: "Error loading data", x: 1, y: 4, c: "0xFF0000" }
             ];
         }
     }

@@ -1,28 +1,28 @@
 // Generate stock symbol display
 const generateStockSymbol = (symbol, x, y, color) => {
     if (!symbol) {
-        return { type: "text", text: "N/A", x: x, y: y, color: "0xFF0000" };
+        return { t: 't', v: "N/A", x: x, y: y, c: "0xFF0000" };
     }
 
-    return { type: "text", text: symbol, x: x, y: y, color: color };
+    return { t: 't', v: symbol, x: x, y: y, c: color };
 };
 
 // Generate stock price display
 const generateStockPrice = (price, x, y, color) => {
     if (price === null || price === undefined) {
-        return { type: "text", text: "N/A", x: x, y: y, color: "0xFF0000" };
+        return { t: 't', v: "N/A", x: x, y: y, c: "0xFF0000" };
     }
 
     // Format price to 2 decimal places, but remove trailing zeros if whole number
     const formattedPrice = price.toFixed(2).replace(/\.?0+$/, '');
 
-    return { type: "text", text: `$${formattedPrice}`, x: x, y: y, color: color };
+    return { t: 't', v: `$${formattedPrice}`, x: x, y: y, c: color };
 };
 
 // Generate stock change display (with color based on positive/negative) - compact format
 const generateStockChange = (change, changePercent, x, y) => {
     if (change === null || change === undefined) {
-        return { type: "text", text: "N/A", x: x, y: y, color: "0xFF0000" };
+        return { t: 't', v: "N/A", x: x, y: y, c: "0xFF0000" };
     }
 
     const isPositive = change >= 0;
@@ -30,20 +30,14 @@ const generateStockChange = (change, changePercent, x, y) => {
     const sign = isPositive ? "+" : "";
     const formattedPercent = changePercent.toFixed(2).replace(/\.?0+$/, '');
 
-    return {
-        type: "text",
-        text: `${sign}${formattedPercent}%`,
-        x: x,
-        y: y,
-        color: color
-    };
+    return { t: 't', v: `${sign}${formattedPercent}%`, x: x, y: y, c: color };
 };
 
 // Generate a complete stock display (symbol, price, change) - compact vertical layout
 const generateStockDisplay = async (stockData, x, y, symbolColor, priceColor) => {
     if (!stockData) {
         return [
-            { type: "text", text: "No data", x: x, y: y, color: "0xFF0000" }
+            { t: 't', v: "No data", x: x, y: y, c: "0xFF0000" }
         ];
     }
 
@@ -65,7 +59,7 @@ const generateStockDisplay = async (stockData, x, y, symbolColor, priceColor) =>
 const generateStocksDisplay = async (stocksData, startX, startY, symbolColor, priceColor) => {
     if (!stocksData || stocksData.length === 0) {
         return [
-            { type: "text", text: "No stocks", x: startX, y: startY, color: "0xFF0000" }
+            { t: 't', v: "No stocks", x: startX, y: startY, c: "0xFF0000" }
         ];
     }
 

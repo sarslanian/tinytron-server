@@ -172,101 +172,22 @@ const parseGameData = (game) => {
 const createField = (ballPosition = null) => {
     const fieldElements = [
         // Field background
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0x00ff00",
-            "start_x": 5,
-            "start_y": 30,
-            "width": 54,
-            "height": 2
-        },
-        // Goal posts
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 61,
-            "start_y": 28,
-            "width": 1,
-            "height": 4
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 59,
-            "start_y": 25,
-            "width": 1,
-            "height": 4
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 63,
-            "start_y": 25,
-            "width": 1,
-            "height": 4
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 60,
-            "start_y": 28,
-            "width": 4,
-            "height": 1
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 2,
-            "start_y": 28,
-            "width": 1,
-            "height": 4
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 0,
-            "start_y": 25,
-            "width": 1,
-            "height": 4
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 4,
-            "start_y": 25,
-            "width": 1,
-            "height": 4
-        },
-        {
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffcc00",
-            "start_x": 1,
-            "start_y": 28,
-            "width": 4,
-            "height": 1
-        }
+        { t: 's', f: "0x00ff00", x: 5,  y: 30, w: 54, h: 2 },
+        // Goal posts (right)
+        { t: 's', f: "0xffcc00", x: 61, y: 28, w: 1,  h: 4 },
+        { t: 's', f: "0xffcc00", x: 59, y: 25, w: 1,  h: 4 },
+        { t: 's', f: "0xffcc00", x: 63, y: 25, w: 1,  h: 4 },
+        { t: 's', f: "0xffcc00", x: 60, y: 28, w: 4,  h: 1 },
+        // Goal posts (left)
+        { t: 's', f: "0xffcc00", x: 2,  y: 28, w: 1,  h: 4 },
+        { t: 's', f: "0xffcc00", x: 0,  y: 25, w: 1,  h: 4 },
+        { t: 's', f: "0xffcc00", x: 4,  y: 25, w: 1,  h: 4 },
+        { t: 's', f: "0xffcc00", x: 1,  y: 28, w: 4,  h: 1 },
     ];
 
     // Add ball position if provided
     if (ballPosition !== null) {
-        fieldElements.push({
-            "type": "shape",
-            "shape": "rect",
-            "fill": "0xffffff",
-            "start_x": ballPosition,
-            "start_y": 30,
-            "width": 1,
-            "height": 2
-        });
+        fieldElements.push({ t: 's', f: "0xffffff", x: ballPosition, y: 30, w: 1, h: 2 });
     }
 
     return fieldElements;
@@ -312,127 +233,42 @@ const createGameDisplay = (gameData) => {
     
     // Add team names and scores
     elements.push(
-        {
-            "type": "text",
-            "text": gameData.awayTeam.name,
-            "x": 0,
-            "y": 5,
-            "color": gameData.awayTeam.color,
-            "font": "Atadore"
-        },
-        {
-            "type": "text",
-            "text": gameData.homeTeam.name,
-            "x": 0,
-            "y": 15,
-            "color": gameData.homeTeam.color,
-            "font": "Atadore"
-        },
-        {
-            "type": "text",
-            "text": gameData.awayTeam.score,
-            "x": 25,
-            "y": 5,
-            "color": "0xffcc00",
-            "font": "Atadore"
-        },
-        {
-            "type": "text",
-            "text": gameData.homeTeam.score,
-            "x": 25,
-            "y": 15,
-            "color": "0xffcc00",
-            "font": "Atadore"
-        }
+        { t: 't', v: gameData.awayTeam.name,  x: 0,  y: 5,  c: gameData.awayTeam.color },
+        { t: 't', v: gameData.homeTeam.name,  x: 0,  y: 15, c: gameData.homeTeam.color },
+        { t: 't', v: gameData.awayTeam.score, x: 25, y: 5,  c: "0xffcc00" },
+        { t: 't', v: gameData.homeTeam.score, x: 25, y: 15, c: "0xffcc00" },
     );
-    
+
     // Add game status
     if (gameData.status) {
         const status = gameData.status;
         if (status.type && status.type.state === 'in') {
-            // Game in progress
-            // Format clock to ensure leading zero for minutes
             const formatClock = (clock) => {
                 if (!clock) return "00:00";
-                // If clock is already in MM:SS format, ensure leading zeros
                 if (clock.includes(':')) {
                     const [minutes, seconds] = clock.split(':');
                     return `${minutes.padStart(2, '0')}:${seconds.padStart(2, '0')}`;
                 }
-                // If it's just a number, assume it's seconds and convert
                 const totalSeconds = parseInt(clock);
                 const minutes = Math.floor(totalSeconds / 60);
                 const remainingSeconds = totalSeconds % 60;
                 return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
             };
-            
+
             elements.push(
-                {
-                    "type": "text",
-                    "text": `Q${status.period}`,
-                    "x": 44,
-                    "y": 5,
-                    "color": "0xffffff",
-                    "font": "Atadore",
-                    "size": 1
-                },
-                {
-                    "type": "text",
-                    "text": formatClock(status.displayClock),
-                    "x": 42,
-                    "y": 14,
-                    "color": "0xffffff",
-                    "size": 1
-                }
+                { t: 't', v: `Q${status.period}`,             x: 44, y: 5,  c: "0xffffff" },
+                { t: 't', v: formatClock(status.displayClock), x: 42, y: 14, c: "0xffffff" },
             );
-            
-            // Add down and distance if available
+
             if (gameData.situation && gameData.situation.shortDownDistanceText) {
                 const downDistanceText = gameData.situation.shortDownDistanceText;
-                
-                // Calculate centered position between goal posts
-                // Left goal post starts at x=0, right goal post ends at x=63
-                // Field area is roughly from x=5 to x=59 (54 pixels wide)
-                const fieldStart = 5;
-                const fieldEnd = 59;
-                const fieldWidth = fieldEnd - fieldStart;
-                
-                // Estimate character width (approximately 4 pixels per character)
-                const charWidth = 4;
-                const textWidth = downDistanceText.length * charWidth;
-                
-                // Center the text in the field
-                const centeredX = fieldStart + Math.floor((fieldWidth - textWidth) / 2);
-                
-                elements.push({
-                    "type": "text",
-                    "text": downDistanceText,
-                    "x": centeredX,
-                    "y": 25,
-                    "color": "0xffffff",
-                    "size": 1
-                });
+                const centeredX = 5 + Math.floor((54 - downDistanceText.length * 4) / 2);
+                elements.push({ t: 't', v: downDistanceText, x: centeredX, y: 25, c: "0xffffff" });
             }
         } else if (status.type && status.type.state === 'pre') {
-            // Game scheduled
-            elements.push({
-                "type": "text",
-                "text": "PRE",
-                "x": 35,
-                "y": 11,
-                "color": "0xffffff",
-                "font": "Atadore"
-            });
+            elements.push({ t: 't', v: "PRE", x: 35, y: 11, c: "0xffffff" });
         } else if (status.type && status.type.state === 'post') {
-            // Game finished
-            elements.push({
-                "type": "text",
-                "text": "FIN",
-                "x": 40,
-                "y": 11,
-                "color": "0xffffff",
-                "font": "Atadore"
-            });
+            elements.push({ t: 't', v: "FIN", x: 40, y: 11, c: "0xffffff" });
         }
     }
     
@@ -442,14 +278,7 @@ const createGameDisplay = (gameData) => {
 // Create "No Games" display
 const createNoGamesDisplay = () => {
     const elements = createField(null);
-    elements.push({
-        "type": "text",
-        "text": "NO GAMES",
-        "x": 25,
-        "y": 11,
-        "color": "0xffffff",
-        "font": "Atadore"
-    });
+    elements.push({ t: 't', v: "NO GAMES", x: 25, y: 11, c: "0xffffff" });
     return elements;
 };
 

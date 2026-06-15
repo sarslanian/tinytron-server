@@ -9,7 +9,7 @@ const destMapping = {
 const generateCTA = async (data, x, y, color) => {
     console.log(data);
     if (!data) {
-        return { type: "text", text: "Error", x: x, y: y, color: color };
+        return { t: 't', v: "Error", x: x, y: y, c: color };
     }
 
     const etaData = data.ctatt.eta;
@@ -68,7 +68,7 @@ const generateCTA = async (data, x, y, color) => {
 
     console.log('CTA API output:', output.trim());
 
-    return { type: "text", text: output.trim(), x: x, y: y, color: color };
+    return { t: 't', v: output.trim(), x: x, y: y, c: color };
 }
 
 export { generateCTA };

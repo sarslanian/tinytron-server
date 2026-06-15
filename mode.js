@@ -13,7 +13,7 @@ export class Mode {
         } catch (error) {
             console.error(`Error in mode ${this.name} getData():`, error);
             // Return a safe fallback payload
-            return [{ type: "text", text: "Error", x: 10, y: 10, color: "0xFF0000" }];
+            return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
         }
     }
 }

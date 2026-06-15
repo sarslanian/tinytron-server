@@ -18,7 +18,7 @@ class StocksApplication {
             const stocksData = await fetchStockData(symbols);
 
             if (!stocksData || stocksData.length === 0) {
-                return [{ type: "text", text: "Stock data unavailable", x: 1, y: 10, color: "0xFF0000" }];
+                return [{ t: 't', v: "Stock data unavailable", x: 1, y: 10, c: "0xFF0000" }];
             }
 
             // If multiple stocks, rotate through them
@@ -46,19 +46,19 @@ class StocksApplication {
             if (currentStock.marketState) {
                 const marketStateColor = currentStock.marketState === 'REGULAR' ? "0x00FF00" : "0xFFFF00";
                 const marketStateText = currentStock.marketState === 'REGULAR' ? 'OPEN' : 'CLSD';
-                payload.push({ type: "text", text: marketStateText, x: 1, y: 28, color: marketStateColor });
+                payload.push({ t: 't', v: marketStateText, x: 1, y: 28, c: marketStateColor });
             }
 
             // Stock counter (if multiple stocks)
             if (stocksData.length > 1) {
                 const counterText = `${this.currentStockIndex + 1}/${stocksData.length}`;
                 const counterX = Math.max(1, 64 - (counterText.length * 4) - 2);
-                payload.push({ type: "text", text: counterText, x: counterX, y: 28, color: "0x8a8a8a" });
+                payload.push({ t: 't', v: counterText, x: counterX, y: 28, c: "0x8a8a8a" });
             }
 
         } catch (error) {
             console.error('Error in stocks application:', error);
-            payload = [{ type: "text", text: "Error loading stocks", x: 1, y: 10, color: "0xFF0000" }];
+            payload = [{ t: 't', v: "Error loading stocks", x: 1, y: 10, c: "0xFF0000" }];
         }
 
         return payload;

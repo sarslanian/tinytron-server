@@ -18,7 +18,7 @@ const generateDate = async (x, y, color) => {
     console.log('Formatted output:', output);
     console.log('UTC for comparison:', DateTime.now().toUTC().toFormat('LLL dd, yyyy'));
 
-    return { type: "text", text: output, x: x, y: y, color: color };
+    return { t: 't', v: output, x: x, y: y, c: color };
 }
 
 export { generateDate };

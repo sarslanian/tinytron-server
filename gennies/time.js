@@ -7,7 +7,7 @@ const generateTime = (x, y, color) => {
     let [hh, mm] = timeString.split(':');
     hh = hh.replace(/^0/, ' ');
 
-    return [{ type: "text", text: `${hh}`, x: x, y: y, color: color }, { type: "text", text: `:`, x: x+7, y: y, color: color }, { type: "text", text: `${mm}`, x: x+10, y: y, color: color } ];
+    return [{ t: 't', v: `${hh}`, x: x, y: y, c: color }, { t: 't', v: `:`, x: x+7, y: y, c: color }, { t: 't', v: `${mm}`, x: x+10, y: y, c: color }];
 }
 
 export {generateTime}
