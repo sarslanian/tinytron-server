@@ -80,7 +80,13 @@ export const ledColor = (primary, alternate) => {
     // Prefer a real hue; black/white/gray only if the team has nothing else
     const colorful = candidates.filter(c => c.s >= 0.3 && c.v >= 0.12);
     if (colorful.length === 0) return '0xCCCCCC';
-    const best = colorful[0];
+    let best = colorful[0];
+    // Brown is just dark orange — brightened it turns salmon, so use the alternate (usually gold)
+    const isBrown = (c) => c.h >= 10 && c.h < 45 && c.v < 0.5;
+    if (isBrown(best) && colorful[1]) best = colorful[1];
+    // Crimson, cardinal and maroon sit just short of red with some blue mixed in.
+    // The matrix has no gamma correction, so that blue reads as pink/magenta — snap to pure red.
+    if (best.h >= 320 || best.h < 10) return hsvToHex({ h: 0, s: 1, v: 0.93 });
     // Full saturation tops out a bit below 255 to match the rest of the app's palette
     return hsvToHex({ h: best.h, s: Math.min(1, best.s * 1.1), v: 0.93 });
 };
@@ -143,6 +149,7 @@ const parseTeam = (c) => {
         score: c.score ?? null,
         record: c.records?.find(r => r.type === 'total')?.summary ?? null,
         color: ledColor(c.team?.color, c.team?.alternateColor),
+        altColor: ledColor(c.team?.alternateColor),
         winner: !!c.winner,
     };
 };
@@ -156,6 +163,11 @@ const parseEvent = (event) => {
 
     const awayTeam = parseTeam(away);
     const homeTeam = parseTeam(home);
+    // Lots of teams land on the same red — if both rows would match, the home team
+    // switches to its alternate (white/gray when the alternate has no real hue)
+    if (awayTeam.color === homeTeam.color && homeTeam.altColor !== awayTeam.color) {
+        homeTeam.color = homeTeam.altColor;
+    }
     const status = normalizeStatus(comp.status?.type);
     const sit = comp.situation || {};
 
