@@ -10,6 +10,7 @@ import { stocks } from '../applications/stocks.js';
 import { mlb } from '../applications/mlb.js';
 import { textMode } from '../applications/text.js';
 import { train } from '../applications/train.js';
+import { cfb } from '../applications/cfb.js';
 
 const MODES = {
     NFL: 'mode1',
@@ -19,6 +20,7 @@ const MODES = {
     MLB: 'mode5',
     TEXT: 'mode6',
     TRAIN: 'mode7',
+    CFB: 'mode8',
 };
 
 export { MODES };
@@ -88,6 +90,15 @@ export class ModeService {
                     return train();
                 } catch (error) {
                     console.error('Error in train mode:', error);
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
+                }
+            }),
+
+            [MODES.CFB]: new Mode(MODES.CFB, 3500, async () => {
+                try {
+                    return cfb();
+                } catch (error) {
+                    console.error('Error fetching CFB data:', error);
                     return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
                 }
             }),

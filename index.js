@@ -3,6 +3,8 @@ import { ModeService, MODES } from './services/modeService.js';  // Correct impo
 import { MqttService } from './services/mqttService.js';  // Make sure this is imported correctly
 import { getTeamFilter, setTeamFilter } from './services/mlbConfig.js';
 import { getText, setText } from './applications/text.js';
+import { getCFBConfig, setCFBConfig } from './services/cfbConfig.js';
+import { fetchCFBTeams } from './fetch/cfb.js';
 
 // Global error handlers to prevent crashes
 process.on('uncaughtException', (error) => {
@@ -56,6 +58,26 @@ app.post('/mlb/teams', (req, res) => {
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
+});
+
+// ── College football filter routes ────────────────────────────────────────────
+
+app.get('/cfb/config', (req, res) => {
+    res.json(getCFBConfig());
+});
+
+app.post('/cfb/config', (req, res) => {
+    try {
+        setCFBConfig(req.body || {});
+        res.json({ ok: true, ...getCFBConfig() });
+    } catch (err) {
+        res.status(400).json({ error: err.message });
+    }
+});
+
+// FBS team list for the web team picker
+app.get('/cfb/teams', async (req, res) => {
+    res.json({ teams: await fetchCFBTeams() });
 });
 
 // ── Text mode routes ──────────────────────────────────────────────────────────
