@@ -33,7 +33,7 @@ const applyFilter = (allGames, { filter, teams }) => {
     if (filter === 'ranked') return allGames.filter(isRanked);
     if (filter === 'teams') {
         const mine = allGames.filter(g => teams.includes(g.awayTeam.id) || teams.includes(g.homeTeam.id));
-        // Picked teams are off today (bye week) — show the ranked slate instead of "NO GAMES"
+        // Picked teams have no games in the window (bye week) — show the ranked slate instead of "NO GAMES"
         return mine.length > 0 ? mine : allGames.filter(isRanked);
     }
     // 'all' — Power 4 games, plus ranked Group of 5 teams so "all" is a superset of "ranked"

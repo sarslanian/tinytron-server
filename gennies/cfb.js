@@ -4,7 +4,7 @@
 //   y=5:  [rank] AWAY ............ score/record
 //   y=14: [rank] HOME ............ score/record
 // and uses the bottom third for state-specific info:
-//   pre   — kickoff time (CT) + TV network
+//   pre   — kickoff time (CT, with the day if not today) + TV network
 //   live  — period/clock + down & distance, field strip with ball + line to gain
 //   final — FINAL (with OT count), loser dimmed
 
@@ -107,7 +107,11 @@ const createPreGameDisplay = (game) => {
 
     els.push({ t: 's', f: '0x2a2a2a', x: 0, y: 19, w: 64, h: 1 });
 
-    const kick = game.kickoff === 'TBD' ? 'TIME TBD' : game.kickoff ? `${game.kickoff} CT` : 'TBD';
+    // Today: "2:30 PM CT"; later this week: "SAT 2:30 PM"
+    const time = game.kickoff && game.kickoff !== 'TBD' ? game.kickoff : null;
+    const kick = game.isToday
+        ? (time ? `${time} CT` : 'TIME TBD')
+        : `${game.weekday} ${time ?? 'TBD'}`;
     els.push(centeredSmall(kick, 23, '0x0088BB'));
     if (game.tv) els.push(centeredSmall(game.tv, 29, DIM));
 
@@ -187,15 +191,15 @@ const createPostponedDisplay = (game) => [
 // ── Empty states ──────────────────────────────────────────────────────────────
 
 export const createNoDataDisplay = () => [
-    { t: 't', v: 'CFB',      x: 22, y: 5,  c: '0xCC6600' },
-    { t: 't', v: 'NO DATA',  x: 5,  y: 14, c: '0xFF4400' },
-    { t: 't', v: 'RETRYING', x: 2,  y: 23, c: DIM },
+    centeredSmall('CFB', 5, '0xCC6600'),
+    centeredSmall('NO DATA', 14, '0xFF4400'),
+    centeredSmall('RETRYING', 23, DIM),
 ];
 
 export const createNoGamesDisplay = () => [
-    { t: 't', v: 'CFB',      x: 22, y: 5,  c: '0xCC6600' },
-    { t: 't', v: 'NO GAMES', x: 2,  y: 14, c: '0xffffff' },
-    { t: 't', v: 'TODAY',    x: 14, y: 23, c: DIM },
+    centeredSmall('CFB', 5, '0xCC6600'),
+    centeredSmall('NO GAMES', 14, '0xffffff'),
+    centeredSmall('THIS WEEK', 23, DIM),
 ];
 
 // ── Main entry point ──────────────────────────────────────────────────────────

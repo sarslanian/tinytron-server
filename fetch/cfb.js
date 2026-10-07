@@ -28,11 +28,19 @@ const TV_LABELS = {
     'ESPN': 'ESPN',
 };
 
-// Today's date in Central Time as { ymd: 'YYYYMMDD', key: 'YYYY-MM-DD' }
+// A date in Central Time as { key: 'YYYY-MM-DD', weekday: 'SAT' }
 const getCTDate = (date = new Date()) => {
     // en-CA formats as YYYY-MM-DD
     const key = date.toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    return { ymd: key.replace(/-/g, ''), key };
+    const weekday = date.toLocaleDateString('en-US', { timeZone: 'America/Chicago', weekday: 'short' }).toUpperCase();
+    return { key, weekday };
+};
+
+// Shift a 'YYYY-MM-DD' key by whole days (string compare works on these keys)
+const shiftDateKey = (key, days) => {
+    const d = new Date(`${key}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
 };
 
 // ── LED color handling ──────────────────────────────────────────────────────
@@ -175,6 +183,7 @@ const parseEvent = (event) => {
         id: event.id,
         date: event.date,
         dateKeyCT: getCTDate(new Date(event.date)).key,
+        weekday: getCTDate(new Date(event.date)).weekday,
         status,
         period: comp.status?.period ?? 0,
         clock: comp.status?.displayClock || null,
@@ -195,41 +204,57 @@ const parseEvent = (event) => {
 };
 
 // ── Scoreboard ──────────────────────────────────────────────────────────────
+//
+// ESPN's default scoreboard is the current CFB week (Monday–Sunday), so on
+// Sunday it still holds the week that just ended. The window on top of that:
+//   Mon–Sat — today's games (any state) + the rest of the week's upcoming games
+//   Sunday  — everything from the past week (the finals recap) + today
 
 let _cache = null;
 let _cacheTime = 0;
 let _cacheDate = null;
-const CACHE_TTL = 30_000;
+let _cacheTTL = 0;
+const LIVE_TTL = 30_000;        // a game is on (or about to be)
+const IDLE_TTL = 5 * 60_000;    // nothing happening — the week payload is ~1 MB
+
+const ACTIVE = ['live', 'half', 'end', 'delayed'];
 
 export const fetchCFBGames = async () => {
     const now = Date.now();
-    const { ymd, key } = getCTDate();
-    if (_cache && _cacheDate === key && (now - _cacheTime) < CACHE_TTL) {
+    const { key, weekday } = getCTDate();
+    if (_cache && _cacheDate === key && (now - _cacheTime) < _cacheTTL) {
         return _cache;
     }
 
+    const isSunday = weekday === 'SUN';
+    const [from, to] = isSunday ? [shiftDateKey(key, -6), key] : [key, shiftDateKey(key, 6)];
+
     // groups=80 is FBS; the default (no groups) only returns featured games
-    const url = `${ESPN_BASE}/scoreboard?dates=${ymd}&groups=80&limit=300`;
+    const url = `${ESPN_BASE}/scoreboard?groups=80&limit=300`;
     try {
-        console.log(`[CFB] Fetching scoreboard for CT date: ${key}`);
+        console.log(`[CFB] Fetching current week (showing ${from} to ${to} CT)`);
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
         const res = await fetch(url, { signal: controller.signal });
         clearTimeout(timeout);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        // ESPN buckets by Eastern date — keep only games kicking off today in Central
         const games = (data.events || [])
             .map(parseEvent)
-            .filter(g => g && g.dateKeyCT === key);
-        console.log(`[CFB] Fetched ${games.length} FBS games`);
+            .filter(g => g && g.dateKeyCT >= from && g.dateKeyCT <= to)
+            .map(g => ({ ...g, isToday: g.dateKeyCT === key }));
+        console.log(`[CFB] ${games.length} FBS games in window`);
+
+        const soon = now + 10 * 60_000;
+        const active = games.some(g => ACTIVE.includes(g.status) || (g.status === 'pre' && Date.parse(g.date) <= soon));
         _cache = games;
         _cacheTime = now;
         _cacheDate = key;
+        _cacheTTL = active ? LIVE_TTL : IDLE_TTL;
         return games;
     } catch (err) {
         console.error('[CFB] Fetch error:', err.name === 'AbortError' ? 'Request timed out' : err);
-        // null (not []) so callers can tell "fetch failed" apart from "no games today";
+        // null (not []) so callers can tell "fetch failed" apart from "no games";
         // a stale cache from a previous day is worse than no data
         return _cacheDate === key ? _cache : null;
     }
