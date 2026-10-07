@@ -2,6 +2,7 @@ import express from 'express';
 import { ModeService, MODES } from './services/modeService.js';  // Correct import path
 import { MqttService } from './services/mqttService.js';  // Make sure this is imported correctly
 import { getTeamFilter, setTeamFilter } from './services/mlbConfig.js';
+import { getText, setText } from './applications/text.js';
 
 // Global error handlers to prevent crashes
 process.on('uncaughtException', (error) => {
@@ -55,6 +56,21 @@ app.post('/mlb/teams', (req, res) => {
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
+});
+
+// ── Text mode routes ──────────────────────────────────────────────────────────
+
+app.get('/text', (req, res) => {
+    res.json(getText());
+});
+
+app.post('/text', (req, res) => {
+    const { text, color, bold } = req.body;
+    if (text !== undefined && typeof text !== 'string') {
+        return res.status(400).json({ error: 'text must be a string' });
+    }
+    setText({ text, color, bold });
+    res.json(getText());
 });
 
 // Start the Express server

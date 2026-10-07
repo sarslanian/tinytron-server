@@ -15,8 +15,8 @@ export class MqttService {
             this.isConnected = true;
             console.log('MQTT connected, flushing queue:', this.publishQueue.length, 'messages');
             while (this.publishQueue.length > 0) {
-                const [topic, message] = this.publishQueue.shift();
-                this.client.publish(topic, message);
+                const [topic, message, retain] = this.publishQueue.shift();
+                this.client.publish(topic, message, { qos: 1, retain });
             }
         });
 
@@ -57,10 +57,12 @@ export class MqttService {
         });
     }
 
-    publish(topic, message) {
+    // retain: broker redelivers the last message to new subscribers — needed for
+    // display state so a device that resets gets the current screen immediately
+    publish(topic, message, retain = false) {
         console.log(`Publishing to topic ${topic}: ${message}`);
         if (this.isConnected) {
-            this.client.publish(topic, message, { qos: 1 }, (err) => {
+            this.client.publish(topic, message, { qos: 1, retain }, (err) => {
                 if (err) {
                     console.log("Error publishing message: ", err);
                 } else {
@@ -69,7 +71,7 @@ export class MqttService {
             });
         } else {
             console.warn('MQTT not connected, queuing message');
-            this.publishQueue.push([topic, message]);
+            this.publishQueue.push([topic, message, retain]);
         }
     }
 

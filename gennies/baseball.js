@@ -50,14 +50,14 @@ const createPreGameDisplay = (game) => {
 
     // Away row
     elements.push(
-        { t: 't', v: game.awayTeam.abbr, x: 1, y: 4, c: game.awayTeam.color, b: true },
-        { t: 't', v: awayRecord, x: rightAlignX(awayRecord), y: 4, c: '0x888888' },
+        { t: 't', v: game.awayTeam.abbr, x: 1, y: 5, c: game.awayTeam.color, b: true },
+        { t: 't', v: awayRecord, x: rightAlignX(awayRecord), y: 5, c: '0x888888' },
     );
 
     // Home row
     elements.push(
-        { t: 't', v: game.homeTeam.abbr, x: 1, y: 10, c: game.homeTeam.color, b: true },
-        { t: 't', v: homeRecord, x: rightAlignX(homeRecord), y: 10, c: '0x888888' },
+        { t: 't', v: game.homeTeam.abbr, x: 1, y: 13, c: game.homeTeam.color, b: true },
+        { t: 't', v: homeRecord, x: rightAlignX(homeRecord), y: 13, c: '0x888888' },
     );
 
     // Separator
@@ -70,7 +70,7 @@ const createPreGameDisplay = (game) => {
     const timeStr = game.gameTime ? `${game.gameTime} CT` : 'TBD';
     const timeX = Math.max(0, Math.round((64 - timeStr.length * 4) / 2));
     elements.push({
-        t: 't', v: timeStr, x: timeX, y: 20, c: '0x0088BB',
+        t: 't', v: timeStr, x: timeX, y: 21, c: '0x0088BB',
     });
 
     // Starting pitchers
@@ -151,21 +151,7 @@ const createDiamond = (bases) => {
     const elements = [];
 
     const drawBase = (coord, occupied) => {
-        if (occupied) {
-            elements.push({
-                t: 's', f: '0xFFCC00',
-                x: coord.x, y: coord.y, w:3, h:3,
-            });
-        } else {
-            elements.push({
-                t: 's', f: '0xffffff',
-                x: coord.x, y: coord.y, w:3, h:3,
-            });
-            elements.push({
-                t: 's', f: '0x000000',
-                x: coord.x + 1, y: coord.y + 1, w:1, h:1,
-            });
-        }
+        elements.push({ t: 's', f: occupied ? '0xFFCC00' : '0x444444', x: coord.x, y: coord.y, w:3, h:3 });
     };
 
     drawBase(BASE_COORDS.second, bases?.second);
@@ -193,12 +179,7 @@ const createCountDots = (balls, strikes, outs) => {
         const total = Math.max(count, emptySlots);
         for (let i = 0; i < total; i++) {
             const sx = DOT_START_X + i * DOT_SPACING;
-            if (i < count) {
-                elements.push({ t: 's', f: activeColor, x: sx, y: y, w:3, h:3 });
-            } else {
-                elements.push({ t: 's', f: '0xffffff', x: sx, y: y, w:3, h:3 });
-                elements.push({ t: 's', f: '0x000000', x: sx + 1, y: y + 1, w:1, h:1 });
-            }
+            elements.push({ t: 's', f: i < count ? activeColor : '0x444444', x: sx, y: y, w:3, h:3 });
         }
     };
     row(balls   ?? 0, 3, '0x00CC00', 20);
@@ -209,35 +190,35 @@ const createCountDots = (balls, strikes, outs) => {
 
 // ── Final layout ──────────────────────────────────────────────────────────────
 //
-//  y=3:   [AWAY abbr]  ←left    [final score]  x=24
-//  y=7:   [FIN / F/N]  →right-aligned  (dim)
-//  y=11:  [HOME abbr]  ←left    [final score]  x=24
-//  y=20:  away line score
-//  y=27:  home line score
+//  y=5:   [AWAY abbr]  ←left    [final score]  x=24
+//  y=9:   [FIN / F/N]  →right-aligned  (dim)
+//  y=14:  [HOME abbr]  ←left    [final score]  x=24
+//  y=16:  R H E column headers (right side, clear of bold scoreboard rows)
+//  y=22:  away R/H/E totals
+//  y=29:  home R/H/E totals
 
-const createLineScore = (innings, awayColor, homeColor) => {
+// Right edge of each R/H/E column; values right-align to these
+const RHE_COLS = [43, 53, 63];
+
+const createRHE = (game) => {
     const elements = [];
-    const n = innings.length;
-    if (n === 0) return elements;
 
-    const PAD = 3, AVAILABLE = 58;
-
-    innings.forEach((inn, i) => {
-        const colCenter = Math.round(PAD + (i + 0.5) * AVAILABLE / n) - 1;
-        const originX = Math.max(0, colCenter - 1);
-
-        const awayVal = inn.awayRuns ?? null;
-        const homeVal = inn.homeRuns ?? null;
-
-        const awayChar = awayVal === null ? '-' : String(Math.min(awayVal, 9));
-        const homeChar = homeVal === null ? '-' : String(Math.min(homeVal, 9));
-
-        const awayDim = awayVal === null ? '0x444444' : awayVal === 0 ? '0x888888' : awayColor;
-        const homeDim = homeVal === null ? '0x444444' : homeVal === 0 ? '0x888888' : homeColor;
-
-        elements.push({ t: 't', v: awayChar, x: originX, y: 22, c: awayDim });
-        elements.push({ t: 't', v: homeChar, x: originX, y: 29, c: homeDim });
+    ['R', 'H', 'E'].forEach((label, i) => {
+        elements.push({ t: 't', v: label, x: RHE_COLS[i] - 3, y: 16, c: '0x444444' });
     });
+
+    const row = (team, y) => {
+        [team.score, team.hits, team.errors].forEach((val, i) => {
+            const text = (val === null || val === undefined) ? '-' : String(val);
+            const color = (val === null || val === undefined) ? '0x444444'
+                : val === 0 ? '0x888888'
+                : team.color;
+            elements.push({ t: 't', v: text, x: rightAlignX(text, RHE_COLS[i]), y, c: color });
+        });
+    };
+
+    row(game.awayTeam, 22);
+    row(game.homeTeam, 29);
 
     return elements;
 };
@@ -246,7 +227,7 @@ const createFinalDisplay = (game) => {
     const elements = [];
 
     // Scoreboard — same y positions as live view
-    elements.push(...createScoreboard(game, 4, 14));
+    elements.push(...createScoreboard(game, 5, 14));
 
     // FINAL label — centered in right half of display
     const extraInnings = game.innings?.length > 9 ? game.innings.length : null;
@@ -254,10 +235,8 @@ const createFinalDisplay = (game) => {
     const finX = Math.round(48 - finText.length * 2);
     elements.push({ t: 't', v: finText, x: finX, y: 9, c: '0x444444', b: true });
 
-    // Line score
-    if (game.innings?.length > 0) {
-        elements.push(...createLineScore(game.innings, game.awayTeam.color, game.homeTeam.color));
-    }
+    // R/H/E totals
+    elements.push(...createRHE(game));
 
     return elements;
 };
@@ -309,6 +288,12 @@ const createPostponedOrCancelledDisplay = (game) => {
 
 // ── No-games display ──────────────────────────────────────────────────────────
 
+export const createNoDataDisplay = () => [
+    { t: 't', v: 'MLB',      x: 22, y: 5,  c: '0x0066CC' },
+    { t: 't', v: 'NO DATA',  x: 5,  y: 14, c: '0xFF4400' },
+    { t: 't', v: 'RETRYING', x: 2,  y: 23, c: '0x888888' },
+];
+
 export const createNoGamesDisplay = () => [
     { t: 't', v: 'MLB',      x: 22, y: 5,  c: '0x0066CC' },
     { t: 't', v: 'NO GAMES', x: 2,  y: 14, c: '0xffffff' },
@@ -330,7 +315,7 @@ export const createGameDisplay = (game) => {
 
     // live, delayed, suspended
     const elements = [
-        ...createScoreboard(game, 4, 14),
+        ...createScoreboard(game, 5, 14),
         ...createInningLabel(game),
         ...createDiamond(game.bases),
     ];

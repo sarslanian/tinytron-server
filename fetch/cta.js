@@ -14,7 +14,8 @@ const fetchCTAData = async (mapId, max, rt, retries = 3) => {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
-            const response = await fetch(`https://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?mapid=${mapId}&max=${max}&rt=${rt}&key=${process.env.CTA_API_KEY}`, {
+            const rtParam = rt ? `&rt=${rt}` : '';
+            const response = await fetch(`https://lapi.transitchicago.com/api/1.0/ttarrivals.aspx?mapid=${mapId}&max=${max}${rtParam}&key=${process.env.CTA_API_KEY}`, {
                 signal: controller.signal
             });
             

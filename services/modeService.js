@@ -3,10 +3,13 @@ import fetch from 'node-fetch';  // Assuming you're using ESM
 import { Mode } from '../mode.js'; // Adjust the path if needed
 
 import { generateCTA } from '../gennies/cta.js';
+import { clock } from '../gennies/clock.js';
 import { dashboard } from '../applications/dashboard.js';
 import { nfl } from '../applications/nfl.js';
 import { stocks } from '../applications/stocks.js';
 import { mlb } from '../applications/mlb.js';
+import { textMode } from '../applications/text.js';
+import { train } from '../applications/train.js';
 
 const MODES = {
     NFL: 'mode1',
@@ -14,6 +17,8 @@ const MODES = {
     CLOCK: 'mode3',
     STOCKS: 'mode4',
     MLB: 'mode5',
+    TEXT: 'mode6',
+    TRAIN: 'mode7',
 };
 
 export { MODES };
@@ -42,10 +47,13 @@ export class ModeService {
                 }
             }),
 
-            [MODES.CLOCK]: new Mode(MODES.CLOCK, 5000, () => {
-                const now = new Date();
-                const timeString = now.toTimeString().split(' ')[0]; // HH:MM:SS format
-                return { t: 't', v: timeString, x: 10, y: 10, c: "0xFFCC00" };
+            [MODES.CLOCK]: new Mode(MODES.CLOCK, 1000, () => {
+                try {
+                    return clock(); // centered HH:MM + date (array of elements)
+                } catch (error) {
+                    console.error('Error generating clock:', error);
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
+                }
             }),
 
             [MODES.STOCKS]: new Mode(MODES.STOCKS, 5000, async () => {
@@ -57,7 +65,7 @@ export class ModeService {
                 }
             }),
 
-            [MODES.MLB]: new Mode(MODES.MLB, 2000, async () => {
+            [MODES.MLB]: new Mode(MODES.MLB, 3500, async () => {
                 try {
                     return mlb();
                 } catch (error) {
@@ -65,13 +73,32 @@ export class ModeService {
                     return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
                 }
             }),
+
+            [MODES.TEXT]: new Mode(MODES.TEXT, 3000, () => {
+                try {
+                    return textMode();
+                } catch (error) {
+                    console.error('Error in text mode:', error);
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
+                }
+            }),
+
+            [MODES.TRAIN]: new Mode(MODES.TRAIN, 30000, async () => {
+                try {
+                    return train();
+                } catch (error) {
+                    console.error('Error in train mode:', error);
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
+                }
+            }),
         };
 
         this.currentMode = null; // Default mode
         this.publishInterval = null;  // Interval for sending messages
+        this.lastPublished = null;  // Last payload sent, for dedupe
 
         // Set the default mode on load
-        this.switchMode(MODES.NFL);
+        this.switchMode(MODES.CLOCK);
     }
 
     // Switch modes and send an immediate message
@@ -104,13 +131,19 @@ export class ModeService {
     async publishMessage() {
         try {
             const data = await this.currentMode.getData();
-            console.log(`Publishing data: ${JSON.stringify(data)}`);
-            this.mqttService.publish("tinytron", JSON.stringify({ data: data }));
+            const message = JSON.stringify({ data: data });
+            // Skip unchanged payloads — every byte over the ESP32SPI link is a
+            // corruption opportunity; the retained message covers reconnects
+            if (message === this.lastPublished) return;
+            this.lastPublished = message;
+            this.mqttService.publish("tinytron", message, true);
         } catch (error) {
             console.error('Error in publishMessage:', error);
             // Publish error message instead of crashing
-            const errorPayload = [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
-            this.mqttService.publish("tinytron", JSON.stringify({ data: errorPayload }));
+            const errorMessage = JSON.stringify({ data: [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }] });
+            if (errorMessage === this.lastPublished) return;
+            this.lastPublished = errorMessage;
+            this.mqttService.publish("tinytron", errorMessage, true);
         }
     }
 

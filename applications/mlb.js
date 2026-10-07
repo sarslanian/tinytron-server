@@ -1,5 +1,5 @@
 import { fetchMLBGames } from '../fetch/mlb.js';
-import { createGameDisplay, createNoGamesDisplay } from '../gennies/baseball.js';
+import { createGameDisplay, createNoGamesDisplay, createNoDataDisplay } from '../gennies/baseball.js';
 import { getTeamFilter } from '../services/mlbConfig.js';
 
 const GAME_DISPLAY_TIME = 8_000; // 8 seconds per game
@@ -20,15 +20,21 @@ export const mlb = async () => {
 
     // Fetch + filter games (fetchMLBGames handles its own 30s cache)
     const allGames = await fetchMLBGames();
-    const teamFilter = getTeamFilter();
+    if (!allGames) {
+        games = [];
+        return createNoDataDisplay();
+    }
 
+    const teamFilter = getTeamFilter();
     const filtered = teamFilter.length > 0
         ? allGames.filter(g =>
             teamFilter.includes(g.awayTeam.id) ||
             teamFilter.includes(g.homeTeam.id))
         : allGames;
 
-    const newGames = sortGames(filtered);
+    // Filtered teams aren't playing (off day, eliminated) — show the rest of
+    // the slate rather than "NO GAMES" on a day with games
+    const newGames = sortGames(filtered.length > 0 ? filtered : allGames);
 
     if (newGames.length === 0) {
         games = [];

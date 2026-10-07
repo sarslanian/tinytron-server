@@ -148,6 +148,12 @@ const parseGame = (game) => {
     const ls = game.linescore || {};
     const status = normalizeStatus(game.status);
 
+    // R/H/E totals live on the linescore, not the schedule team data
+    away.hits   = ls.teams?.away?.hits   ?? null;
+    away.errors = ls.teams?.away?.errors ?? null;
+    home.hits   = ls.teams?.home?.hits   ?? null;
+    home.errors = ls.teams?.home?.errors ?? null;
+
     // Per-inning data (for potential line score use later)
     const innings = (ls.innings || []).map(inn => ({
         num: inn.num,
@@ -207,6 +213,7 @@ export const fetchMLBGames = async () => {
         return games;
     } catch (err) {
         console.error('[MLB] Fetch error:', err.name === 'AbortError' ? 'Request timed out' : err);
-        return _cache || [];
+        // null (not []) so callers can tell "fetch failed" apart from "no games today"
+        return _cache;
     }
 };
