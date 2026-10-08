@@ -37,8 +37,8 @@ const dimColor = (hexStr, factor) => {
 
 const AWAY_Y = 5;
 const HOME_Y = 14;
-const ABBR_X = 9;          // rank sits in x=0..7 to the left
-const POSS_X = 40;         // possession marker column (abbr ends by ~x=35)
+const ABBR_X = 9;          // rank sits in x=0..7 to the left (leagues without ranks start at x=0)
+const POSS_GAP = 31;       // possession marker sits this far right of the abbr (abbr is ≤ ~27px)
 const STATUS_Y = 22;
 const FIELD_Y = 28;
 const FIELD_H = 4;
@@ -51,13 +51,15 @@ const RED_ZONE = '0xFF2200';
 
 // ── Shared pieces ─────────────────────────────────────────────────────────────
 
-const teamRow = (team, y, abbrColor = team.color) => {
+const abbrX = (opts) => opts.ranked ? ABBR_X : 0;
+
+const teamRow = (team, y, opts, abbrColor = team.color) => {
     const els = [];
     if (team.rank) {
         const r = String(team.rank);
         els.push({ t: 't', v: r, x: 8 - smallWidth(r), y, c: DIM });
     }
-    els.push({ t: 't', v: team.abbr, x: ABBR_X, y, c: abbrColor, b: true });
+    els.push({ t: 't', v: team.abbr, x: abbrX(opts), y, c: abbrColor, b: true });
     return els;
 };
 
@@ -96,8 +98,8 @@ const createField = (game) => {
 
 // ── Pre-game ──────────────────────────────────────────────────────────────────
 
-const createPreGameDisplay = (game) => {
-    const els = [...teamRow(game.awayTeam, AWAY_Y), ...teamRow(game.homeTeam, HOME_Y)];
+const createPreGameDisplay = (game, opts) => {
+    const els = [...teamRow(game.awayTeam, AWAY_Y, opts), ...teamRow(game.homeTeam, HOME_Y, opts)];
 
     for (const [team, y] of [[game.awayTeam, AWAY_Y], [game.homeTeam, HOME_Y]]) {
         if (team.record) {
@@ -120,10 +122,10 @@ const createPreGameDisplay = (game) => {
 
 // ── Live (incl. halftime, end of quarter, delays) ────────────────────────────
 
-const createLiveDisplay = (game, timedOT) => {
+const createLiveDisplay = (game, opts) => {
     const els = [
-        ...teamRow(game.awayTeam, AWAY_Y),
-        ...teamRow(game.homeTeam, HOME_Y),
+        ...teamRow(game.awayTeam, AWAY_Y, opts),
+        ...teamRow(game.homeTeam, HOME_Y, opts),
         scoreAt(game.awayTeam.score, AWAY_Y),
         scoreAt(game.homeTeam.score, HOME_Y),
     ];
@@ -131,7 +133,7 @@ const createLiveDisplay = (game, timedOT) => {
     if (game.possession) {
         els.push({
             t: 's', f: game.redZone ? RED_ZONE : '0xCC6600',
-            x: POSS_X, y: (game.possession === 'away' ? AWAY_Y : HOME_Y) - 1, w: 3, h: 3,
+            x: abbrX(opts) + POSS_GAP, y: (game.possession === 'away' ? AWAY_Y : HOME_Y) - 1, w: 3, h: 3,
         });
     }
 
@@ -143,7 +145,7 @@ const createLiveDisplay = (game, timedOT) => {
         els.push(centeredSmall('DELAYED', STATUS_Y, SCORE_COLOR));
     } else {
         // College OT is untimed — the clock is meaningless there (NFL OT is timed)
-        const left = (game.period > 4 && !timedOT) || !game.clock
+        const left = (game.period > 4 && !opts.timedOT) || !game.clock
             ? periodLabel(game.period)
             : `${periodLabel(game.period)} ${game.clock}`;
         els.push({ t: 't', v: left, x: 0, y: STATUS_Y, c: '0xFFFFFF' });
@@ -161,13 +163,13 @@ const createLiveDisplay = (game, timedOT) => {
 
 // ── Final ─────────────────────────────────────────────────────────────────────
 
-const createFinalDisplay = (game) => {
+const createFinalDisplay = (game, opts) => {
     const els = [];
     const decided = game.awayTeam.winner || game.homeTeam.winner;
 
     for (const [team, y] of [[game.awayTeam, AWAY_Y], [game.homeTeam, HOME_Y]]) {
         const lost = decided && !team.winner;
-        els.push(...teamRow(team, y, lost ? dimColor(team.color, 0.4) : team.color));
+        els.push(...teamRow(team, y, opts, lost ? dimColor(team.color, 0.4) : team.color));
         els.push(scoreAt(team.score, y, lost ? '0x666666' : SCORE_COLOR));
     }
 
@@ -181,17 +183,18 @@ const createFinalDisplay = (game) => {
 
 // ── Postponed / cancelled ─────────────────────────────────────────────────────
 
-const createPostponedDisplay = (game) => [
-    ...teamRow(game.awayTeam, AWAY_Y),
-    ...teamRow(game.homeTeam, HOME_Y),
+const createPostponedDisplay = (game, opts) => [
+    ...teamRow(game.awayTeam, AWAY_Y, opts),
+    ...teamRow(game.homeTeam, HOME_Y, opts),
     { t: 's', f: '0x2a2a2a', x: 0, y: 19, w: 64, h: 1 },
     centeredSmall(game.status === 'cancelled' ? 'CANCELED' : 'POSTPONED', 25, '0xFF4400'),
 ];
 
 // ── Per-league entry points ───────────────────────────────────────────────────
 
-// league: label for the empty states; timedOT: whether overtime keeps a game clock
-export const createFootballDisplays = ({ league, timedOT }) => ({
+// league: label for the empty states; timedOT: whether overtime keeps a game clock;
+// ranked: whether teams carry poll ranks (reserves the rank column left of the abbr)
+export const createFootballDisplays = ({ league, ...opts }) => ({
     createNoDataDisplay: () => [
         centeredSmall(league, 5, '0xCC6600'),
         centeredSmall('NO DATA', 14, '0xFF4400'),
@@ -206,11 +209,11 @@ export const createFootballDisplays = ({ league, timedOT }) => ({
 
     createGameDisplay: (game) => {
         switch (game.status) {
-            case 'pre':       return createPreGameDisplay(game);
-            case 'final':     return createFinalDisplay(game);
+            case 'pre':       return createPreGameDisplay(game, opts);
+            case 'final':     return createFinalDisplay(game, opts);
             case 'postponed':
-            case 'cancelled': return createPostponedDisplay(game);
-            default:          return createLiveDisplay(game, timedOT);
+            case 'cancelled': return createPostponedDisplay(game, opts);
+            default:          return createLiveDisplay(game, opts);
         }
     },
 });
