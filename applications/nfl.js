@@ -1,7 +1,7 @@
 import { fetchNFLGames } from '../fetch/nfl.js';
 import { createFootballDisplays } from '../gennies/football.js';
 
-const { createGameDisplay, createNoGamesDisplay, createNoDataDisplay } = createFootballDisplays({ league: 'NFL', timedOT: true });
+const { createGameDisplay, createNoGamesDisplay, createNoDataDisplay } = createFootballDisplays({ league: 'NFL', timedOT: true, ranked: false });
 
 const GAME_DISPLAY_TIME = 8_000; // 8 seconds per game
 
