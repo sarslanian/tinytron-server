@@ -11,6 +11,7 @@ import { mlb } from '../applications/mlb.js';
 import { textMode } from '../applications/text.js';
 import { train } from '../applications/train.js';
 import { cfb } from '../applications/cfb.js';
+import { screensaver } from '../applications/screensaver.js';
 
 const MODES = {
     NFL: 'mode1',
@@ -21,6 +22,7 @@ const MODES = {
     TEXT: 'mode6',
     TRAIN: 'mode7',
     CFB: 'mode8',
+    SCREENSAVER: 'mode9',
 };
 
 export { MODES };
@@ -102,6 +104,10 @@ export class ModeService {
                     return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
                 }
             }),
+
+            // Animates on-device from a sprite sheet; the payload never changes, so
+            // dedupe means it's published once and the interval just idles
+            [MODES.SCREENSAVER]: new Mode(MODES.SCREENSAVER, 60000, () => screensaver()),
         };
 
         this.currentMode = null; // Default mode
