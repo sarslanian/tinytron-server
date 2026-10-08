@@ -1,6 +1,8 @@
 import { fetchCFBGames, POWER4_CONFERENCES, POWER4_INDEPENDENTS } from '../fetch/cfb.js';
-import { createGameDisplay, createNoGamesDisplay, createNoDataDisplay } from '../gennies/cfb.js';
+import { createFootballDisplays } from '../gennies/football.js';
 import { getCFBConfig } from '../services/cfbConfig.js';
+
+const { createGameDisplay, createNoGamesDisplay, createNoDataDisplay } = createFootballDisplays({ league: 'CFB', timedOT: false });
 
 const GAME_DISPLAY_TIME = 8_000; // 8 seconds per game
 

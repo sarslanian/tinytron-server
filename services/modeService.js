@@ -33,12 +33,12 @@ export class ModeService {
 
         // Define modes with their respective frequencies and data generation logic
         this.modes = {
-            [MODES.NFL]: new Mode(MODES.NFL, 2000, async () => {
+            [MODES.NFL]: new Mode(MODES.NFL, 3500, async () => {
                 try {
-                  return nfl(); // Return the generated NFL data
+                    return nfl();
                 } catch (error) {
                     console.error('Error fetching NFL data:', error);
-                    return { t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" };
+                    return [{ t: 't', v: "Error", x: 10, y: 10, c: "0xFF0000" }];
                 }
             }),
 
